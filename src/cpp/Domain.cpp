@@ -42,6 +42,8 @@ CDomain::CDomain()
 
 	Force = nullptr;
 	StiffnessMatrix = nullptr;
+
+	Type = 1;
 }
 
 //	Desconstructor
@@ -96,6 +98,12 @@ bool CDomain::ReadData(string FileName, string OutFile)
 //	Update equation number
 	CalculateEquationNumber();
 	Output->OutputEquationNumber();
+
+//  Read the solving type
+	if (ReadSolveType())
+		Output->OutputSolveTypeInfo();
+	else
+		return false;
 
 //	Read load data
 	if (ReadLoadCases())
@@ -154,11 +162,12 @@ bool CDomain::ReadLoadCases()
 
 //	Loop over for all load cases
 	for (unsigned int lcase = 0; lcase < NLCASE; lcase++)
-		if (!LoadCases[lcase].Read(Input, lcase))
+		if (!LoadCases[lcase].Read(Input, lcase, Type))
 			return false;
 
 	return true;
 }
+
 
 // Read element data
 bool CDomain::ReadElements()
@@ -189,10 +198,12 @@ void CDomain::CalculateColumnHeights()
             Element.GenerateLocationMatrix();
             
             StiffnessMatrix->CalculateColumnHeight(Element.GetLocationMatrix(), Element.GetND());
+			C_MassMatrix->CalculateColumnHeight(Element.GetLocationMatrix(), Element.GetND());
         }
     }
     
     StiffnessMatrix->CalculateMaximumHalfBandwidth();
+	C_MassMatrix->CalculateMaximumHalfBandwidth();
     
 #ifdef _DEBUG_
 	COutputter* Output = COutputter::Instance();
@@ -232,6 +243,39 @@ void CDomain::AssembleStiffnessMatrix()
 
 }
 
+//  Assemble the global mass matrix  1--consistent mass matrix  2--lumped mass matrix
+void CDomain::AssembleMassMatrix()
+{
+	//	Loop over for all element groups
+	for (unsigned int EleGrp = 0; EleGrp < NUMEG; EleGrp++)
+	{
+		CElementGroup& ElementGrp = EleGrpList[EleGrp];
+		unsigned int NUME = ElementGrp.GetNUME();
+
+		unsigned int size = ElementGrp[0].SizeOfStiffnessMatrix(); // The length of consistent mass matrix is the same as the stiffness matrix
+		double* Matrix = new double[size];
+
+		//		Loop over for all elements in group EleGrp
+		for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		{
+			CElement& Element = ElementGrp[Ele];
+			Element.ElementMass(Matrix);
+			C_MassMatrix->Assembly(Matrix, Element.GetLocationMatrix(), Element.GetND());
+		}
+		delete[] Matrix;
+		Matrix = nullptr;
+	}
+
+	COutputter* Outputter = COutputter::Instance();
+
+
+
+#ifdef _DEBUG_
+	COutputter* Output = COutputter::Instance();
+	Output->PrintMassMatrix();
+#endif
+}
+
 //	Assemble the global nodal force vector for load case LoadCase
 bool CDomain::AssembleForce(unsigned int LoadCase)
 {
@@ -252,6 +296,8 @@ bool CDomain::AssembleForce(unsigned int LoadCase)
 	return true;
 }
 
+
+
 //	Allocate storage for matrices Force, ColumnHeights, DiagonalAddress and StiffnessMatrix
 //	and calculate the column heights and address of diagonal elements
 void CDomain::AllocateMatrices()
@@ -263,15 +309,31 @@ void CDomain::AllocateMatrices()
 //  Create the banded stiffness matrix
     StiffnessMatrix = new CSkylineMatrix<double>(NEQ);
 
+// Create the consistent banded mass matrix
+	C_MassMatrix = new CSkylineMatrix<double>(NEQ);
+
+// Create the lumped banded mass matrix
+	L_MassMatrix = new double[NEQ];
+	clear(L_MassMatrix, NEQ);
+
 //	Calculate column heights
 	CalculateColumnHeights();
 
 //	Calculate address of diagonal elements in banded matrix
 	StiffnessMatrix->CalculateDiagnoalAddress();
+	C_MassMatrix->CalculateDiagnoalAddress();
 
 //	Allocate for banded global stiffness matrix
     StiffnessMatrix->Allocate();
+	C_MassMatrix->Allocate();
 
 	COutputter* Output = COutputter::Instance();
 	Output->OutputTotalSystemData();
+}
+
+//!	Read the solving type
+bool CDomain::ReadSolveType()
+{
+	Input >> Type;
+	return true;
 }

@@ -26,7 +26,7 @@ class CSkylineMatrix
 //! Maximum half bandwith
     unsigned int MK_;
 
-//! Size of the storage used to store the stiffness matrkix in skyline
+//! Size of the storage used to store the stiffness matrix in skyline
     unsigned int NWK_;
 
 //! Column hights
@@ -83,6 +83,9 @@ public:
 //! Return the size of the storage used to store the stiffness matrkix in skyline
     inline unsigned int size() const;
 
+//! Generate the effecitve stiffness matrix
+	inline void Generate_Ke(CSkylineMatrix<T_>* K, double* M, double m1, double m3);
+
 }; /* class definition */
 
 //! constructor functions
@@ -134,7 +137,7 @@ inline CSkylineMatrix<T_>::~CSkylineMatrix<T_>()
 template <class T_>
 inline T_& CSkylineMatrix<T_>::operator()(unsigned int i, unsigned int j)
 {
-    if (j >= i)
+	if (j >= i)
         return data_[DiagonalAddress_[j - 1] + (j - i) - 1];
     else
         return data_[DiagonalAddress_[i - 1] + (i - j) - 1];
@@ -275,3 +278,26 @@ void CSkylineMatrix<T_>::CalculateDiagnoalAddress()
     
 }
 
+//! Generate the effecitve stiffness matrix
+template <class T_>
+void CSkylineMatrix<T_>::Generate_Ke(CSkylineMatrix<T_>* K, double* M, double m1, double m3)
+{
+	// Copy other message from K (other than data_)
+	NWK_ = K->NWK_;
+	NEQ_ = K->NEQ_;
+	MK_ = K->MK_;
+	for (unsigned int i = 0; i < NEQ_; i++) ColumnHeights_[i] = K->ColumnHeights_[i];
+	for (unsigned int i = 0; i < NEQ_ + 1; i++) DiagonalAddress_[i] = K->DiagonalAddress_[i];
+	data_ = new T_ [NWK_];
+
+	// Calculate the data in the K_e matrix
+	unsigned int* MAXA = GetDiagonalAddress();
+	for (unsigned int i = 0; i < NWK_; i++) {
+		data_[i] = m1 * K->data_[i];
+	}
+	for (unsigned int i = 0; i < NEQ_; i++) {
+		int j = MAXA[i];
+		data_[j - 1] += m3 * M[i];
+	}
+
+}

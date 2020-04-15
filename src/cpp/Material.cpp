@@ -30,7 +30,7 @@ bool CBarMaterial::Read(ifstream& Input, unsigned int mset)
 		return false;
 	}
 
-	Input >> E >> Area;	// Young's modulus and section area
+	Input >> E >> Area >> rho;	// Young's modulus and section area and density
 
 	return true;
 }

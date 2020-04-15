@@ -33,6 +33,8 @@ protected:
 	static COutputter* _instance;
 //! Another instance class for tecplot
 	static COutputter* tec_instance;
+//! Another instance class for history message
+	static COutputter* his_instance;
 
 public:
 
@@ -43,6 +45,8 @@ public:
 	static COutputter* Instance(string FileName = " ");
 //! Return the tecplot instance of the class
 	static COutputter* Tec_Instance(string FileName = " ");
+//! Return the history instance of the class
+	static COutputter* His_Instance(string FileName = " ");
 
 //!	Output current time and date
 	void PrintTime(const struct tm * ptm, COutputter& output);
@@ -65,6 +69,9 @@ public:
 //!	Output Q4 element data
 	void PrintQ4ElementData(unsigned int EleGrp);
 
+//! Output solving type
+	void OutputSolveTypeInfo();
+
 //!	Output load data 
 	void OutputLoadInfo(); 
 
@@ -79,6 +86,9 @@ public:
 
 //! Output into tecplot
 	void OutputTecplot(int step);
+
+//! Print motion of certain freedom against time
+	void OutputHisMessage(double time, double dis, double vel, double acc);
 
 //! Overload the operator <<
 	template <typename T>
@@ -101,6 +111,9 @@ public:
 
 //!	Print banded and full stiffness matrix for debuging
 	void PrintStiffnessMatrix();
+
+//!	Print banded and full mass matrix for debuging
+	void PrintMassMatrix();
 
 //!	Print address of diagonal elements for debuging
 	void PrintDiagonalAddress();

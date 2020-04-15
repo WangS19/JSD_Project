@@ -72,8 +72,22 @@ private:
     global stiffness matrix. */
     CSkylineMatrix<double>* StiffnessMatrix;
 
+//! Consistent mass matrix --- has the same for with the global stiffness matrix
+	CSkylineMatrix<double>* C_MassMatrix;
+
+//! Lumped mass matrix --- has the same length of NEQ
+	double* L_MassMatrix;
+
 //!	Global nodal force/displacement vector
 	double* Force;
+
+//! What kind of problem is to be solved
+//  1 -- static problem
+//  2 -- modal analysis
+//  3 -- dynamic problem
+	int Type;
+
+
 
 public:
 
@@ -91,6 +105,9 @@ public:
 
 //!	Read nodal point data
 	bool ReadNodalPoints();
+
+//!	Read the solving type
+	bool ReadSolveType();
 
 //!	Read load case data
 	bool ReadLoadCases();
@@ -111,6 +128,9 @@ public:
 
 //!	Assemble the banded gloabl stiffness matrix
 	void AssembleStiffnessMatrix();
+
+//! Assemble the global mass matrix
+	void AssembleMassMatrix();
 
 //!	Assemble the global nodal force vector for load case LoadCase
 	bool AssembleForce(unsigned int LoadCase); 
@@ -148,10 +168,17 @@ public:
 //!	Return the number of concentrated loads applied in each load case
 	inline unsigned int* GetNLOAD() { return NLOAD; }
 
+//!	Return the number of solving type
+	inline unsigned int GetSType() { return Type; }
+
 //!	Return the list of load cases
 	inline CLoadCaseData* GetLoadCases() { return LoadCases; }
 
 //!	Return pointer to the banded stiffness matrix
 	inline CSkylineMatrix<double>* GetStiffnessMatrix() { return StiffnessMatrix; }
+
+//!	Return pointer to the banded mass matrix
+	inline CSkylineMatrix<double>* GetMassMatrix() { return C_MassMatrix; }
+
 
 };

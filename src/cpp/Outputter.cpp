@@ -35,6 +35,7 @@ void COutputter::PrintTime(const struct tm* ptm, COutputter &output)
 
 COutputter* COutputter::_instance = nullptr;
 COutputter* COutputter::tec_instance = nullptr;
+COutputter* COutputter::his_instance = nullptr;
 
 //	Constructor
 COutputter::COutputter(string FileName)
@@ -61,6 +62,13 @@ COutputter* COutputter::Tec_Instance(string FileName)
 	if (!tec_instance)
 		tec_instance = new COutputter(FileName);
 	return tec_instance;
+}
+//! Return the his instance of the class
+COutputter* COutputter::His_Instance(string FileName)
+{
+	if (!his_instance)
+		his_instance = new COutputter(FileName);
+	return his_instance;
 }
 
 //	Print program logo
@@ -281,6 +289,28 @@ void COutputter::OutputLoadInfo()
 	}
 }
 
+//! Print solving type
+void COutputter::OutputSolveTypeInfo()
+{
+	CDomain* FEMData = CDomain::Instance();
+	int type = FEMData->GetSType();
+
+	*this << setiosflags(ios::scientific);
+	*this << " S O L V I N G   T Y P E" << endl;
+	if (type == 1) 
+		*this << " 1 -- Static"
+			  << endl;		
+	else if (type == 2)
+		*this << " 2 -- Modal"
+	          << endl;
+	else if (type == 3)
+		*this << " 3 -- Dynamics"
+		      << endl;
+	else
+		*this << "E R R : No such solving type"
+		      << endl;
+}
+
 //	Print nodal displacement
 void COutputter::OutputNodalDisplacement(unsigned int lcase)
 {
@@ -459,6 +489,17 @@ void COutputter::OutputTecplot(int step)
 	}
 }
 
+//	Print motion of certain freedom against time
+void COutputter::OutputHisMessage(double time, double dis, double vel, double acc)
+{
+
+	OutputFile << setiosflags(ios::scientific);
+
+	OutputFile << setw(12) << setprecision(4) <<   time << setw(12) << setprecision(4) << dis << setw(12) << setprecision(4) << vel << setw(12) << setprecision(4) <<  acc;
+
+	OutputFile << endl;
+}
+
 #ifdef _DEBUG_
 
 //	Print column heights for debuging
@@ -543,14 +584,71 @@ void COutputter::PrintStiffnessMatrix()
 	{
 		for (int J = 1; J <= NEQ; J++)
 		{
-			int H = DiagonalAddress[J] - DiagonalAddress[J - 1];
-			if (J - I - H >= 0)
+			int H;
+			if (J >= I)
+				H = DiagonalAddress[J] - DiagonalAddress[J - 1];
+			else
+				H = DiagonalAddress[I] - DiagonalAddress[I - 1];
+			if (J - I - H >= 0 || I - J - H >= 0)
 			{
 				*this << setw(14) << 0.0;
 			}
 			else
 			{
 				*this << setw(14) << (*StiffnessMatrix)(I, J);
+			}
+		}
+
+		*this << endl;
+	}
+
+	*this << endl;
+}
+
+//	Print banded and full mass matrix for debuging
+void COutputter::PrintMassMatrix()
+{
+	*this << "*** _Debug_ *** Banded mass matrix" << endl;
+
+	CDomain* FEMData = CDomain::Instance();
+
+	unsigned int NEQ = FEMData->GetNEQ();
+	CSkylineMatrix<double> *MassMatrix = FEMData->GetMassMatrix();
+	unsigned int* DiagonalAddress = MassMatrix->GetDiagonalAddress();
+
+	*this << setiosflags(ios::scientific) << setprecision(5);
+
+	for (unsigned int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++)
+	{
+		*this << setw(14) << (*MassMatrix)(i);
+
+		if ((i + 1) % 6 == 0)
+		{
+			*this << endl;
+		}
+	}
+
+	*this << endl
+		<< endl;
+
+	*this << "*** _Debug_ *** Full mass matrix" << endl;
+
+	for (int I = 1; I <= NEQ; I++)
+	{
+		for (int J = 1; J <= NEQ; J++)
+		{
+			int H;
+			if (J >= I)
+				H = DiagonalAddress[J] - DiagonalAddress[J - 1];
+			else
+				H = DiagonalAddress[I] - DiagonalAddress[I - 1];
+			if (J - I - H >= 0 || I - J - H >= 0)
+			{
+				*this << setw(14) << 0.0;
+			}
+			else
+			{
+				*this << setw(14) << (*MassMatrix)(I, J);
 			}
 		}
 

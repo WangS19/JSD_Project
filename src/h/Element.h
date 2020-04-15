@@ -77,6 +77,9 @@ public:
 //!	Calculate element stiffness matrix (Upper triangular matrix, stored as an array column by colum)
 	virtual void ElementStiffness(double* stiffness) = 0; 
 
+//!	Calculate element mass matrix (Upper triangular matrix, stored as an array column by colum)
+	virtual void ElementMass(double* stiffness) = 0;
+
 //!	Calculate element stress 
 	virtual void ElementStress(double* stress, double* Displacement) = 0;
 
