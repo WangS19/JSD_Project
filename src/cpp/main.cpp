@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 	COutputter* Output = COutputter::Instance();
 	double time_solution = 0.0;
 
-	int Solving_Type = FEMData->GetSType();
+	int Solving_Type = FEMData->GetMODEX();
 
 // ****************************************** //
 // ***  For the stastic problem calculate *** //
@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
 // ******************************************* //
 	else if (Solving_Type == 3)
 	{
+		*Output << "S T A R T: D Y N A M I C S  A N A L Y S I S" << endl << endl;
 		// Dynamics analysis
 		CG_alpha* G_alpha_ = new CG_alpha(FEMData->GetStiffnessMatrix(), FEMData->GetMassMatrix());
 
@@ -153,17 +154,22 @@ int main(int argc, char *argv[])
 
 		//  Output the history result of certain freedom
 		COutputter* His_Output = COutputter::His_Instance(HisFile);
+		G_alpha_->Obtain_HisOutput(His_Output, FEMData->GetNumHisFreedom(), FEMData->GetMessHisFreedom());
 
-		G_alpha_->Obtain_HisOutput(His_Output);
+		// Tecplot Output
+		G_alpha_->Obtain_TecOutput(Tec_Output);
 
 		for (unsigned int i = 0; i < FEMData->GetNLCASE(); i++)
 		{
+			*Output << "	Begin the Load case		" << i + 1 << endl;
 			// Integration with the newly G_alpha method
 			G_alpha_->G_alpha_Intregration(Loads[i], i);
+			*Output << "	Finish the Load case		" << i + 1 << endl;
 		}
-		
 
-		// Output
+
+
+		time_solution = timer.ElapsedTime();
 
 	}
 // ******************************************* //

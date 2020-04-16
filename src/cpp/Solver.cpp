@@ -266,7 +266,7 @@ void CModal::Orth()
 }
 
 // Integration with the newly G_alpha method
-void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
+void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 {
 	// Calculate the lumped mass matrix
 	Cal_LM();
@@ -307,7 +307,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 	double* vel_p = new double[NEQ];
 	double* acc_p = new double[NEQ];
 	double* Force_p = new double[NEQ];
-	Recall_message(i_load, dis_p, vel_p, acc_p);
+	Recall_message(i_load, dis_p, vel_p, acc_p, Force_p);
 
 	// *** Without C matrix is first tested ***
 	double time_load = Load.time_knot;
@@ -322,28 +322,35 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
 			acc_p[i] /= L_M[i];
 		}
-		int num_freedom = NodeList[Freedom_output[0] - 1].bcode[Freedom_output[1] - 1];
-		His_Output->OutputHisMessage(t, dis[num_freedom - 1], vel[num_freedom - 1], acc[num_freedom - 1]);
+		int* num_freedom = new int[N_His_Freedom];
+		for (unsigned int i = 0; i < N_His_Freedom; i++) {
+			num_freedom[i] = NodeList[Freedom_output[2 * i] - 1].bcode[Freedom_output[2 * i + 1] - 1];
+		}
+		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom,num_freedom);
 	}
 
 	// Genarate the effective stiffness matrix K_e -- Eq(60)
 	CSkylineMatrix<double>* K_e = new CSkylineMatrix<double>(NEQ);
 	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
-	// ****for debug****
-	unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
-	cout << setiosflags(ios::scientific) << setprecision(5);
-	for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
-		cout << setw(14) << (*K_e)(i);
+	//// ****for debug****
+	//unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
+	//cout << setiosflags(ios::scientific) << setprecision(5);
+	//for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
+	//	cout << setw(14) << (*K_e)(i);
 
-		if ((i + 1) % 6 == 0)
-		{
-			cout << endl;
-		}
-	}
+	//	if ((i + 1) % 6 == 0)
+	//	{
+	//		cout << endl;
+	//	}
+	//}
+	//cout << endl;
 	
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
+
+	// Count the Tecplot output
+	int Tec_Count = 1;
 
 	// Integration
 	while (t < time_load)
@@ -382,10 +389,17 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 			acc[i] = m13 * (dis[i] - dis_p[i]) + m14 * vel_p[i] + m15 * acc_p[i];
 		}
 
-		// Output
-		int num_freedom = NodeList[Freedom_output[0] - 1].bcode[Freedom_output[1] - 1];
-		His_Output->OutputHisMessage(t, dis[num_freedom - 1], vel[num_freedom - 1], acc[num_freedom - 1]);
+		// History Output
+		int* num_freedom = new int[N_His_Freedom];
+		for (unsigned int i = 0; i < N_His_Freedom; i++) {
+			num_freedom[i] = NodeList[Freedom_output[2 * i] - 1].bcode[Freedom_output[2 * i + 1] - 1];
+		}
+		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
 
+		// Tecplot Output
+		if (fmod(Tec_Count, TecplotOut_Interval) == 0)
+			Tecplot_Output->OutputTecplot(t, dis);
+		Tec_Count += 1;
 
 		// Store the motion messages of the last step
 		Store_message(dis_p, vel_p, acc_p, Force_p);
@@ -412,7 +426,7 @@ double* CG_alpha::Cur_Force(double time, CLoadCaseData& load)
 
 
 //! Recall the motion messages of the end of the last load
-void CG_alpha::Recall_message(int iload, double* dis_p, double* vel_p, double* acc_p)
+void CG_alpha::Recall_message(int iload, double* dis_p, double* vel_p, double* acc_p, double* Force_p)
 {
 	int NEQ = M->dim();
 	if (iload == 0)
@@ -431,6 +445,7 @@ void CG_alpha::Recall_message(int iload, double* dis_p, double* vel_p, double* a
 		dis_p[i] = dis[i];
 		vel_p[i] = vel[i];
 		acc_p[i] = acc[i];
+		Force_p[i] = Force[i];
 	}
 }
 

@@ -38,8 +38,10 @@ private:
 	char Title[256]; 
 
 //!	Solution MODEX
-/*!		0 : Data check only;
-		1 : Execution */
+//	0 -- Data check only
+//  1 -- static problem
+//  2 -- modal analysis
+//  3 -- dynamic problem
 	unsigned int MODEX;
 
 //!	Total number of nodal points
@@ -81,12 +83,9 @@ private:
 //!	Global nodal force/displacement vector
 	double* Force;
 
-//! What kind of problem is to be solved
-//  1 -- static problem
-//  2 -- modal analysis
-//  3 -- dynamic problem
-	int Type;
-
+//! Output history messages of which freedom
+	int Num_His_Output;
+	int* His_freedom;
 
 
 public:
@@ -106,14 +105,14 @@ public:
 //!	Read nodal point data
 	bool ReadNodalPoints();
 
-//!	Read the solving type
-	bool ReadSolveType();
-
 //!	Read load case data
 	bool ReadLoadCases();
 
 //!	Read element data
 	bool ReadElements();
+
+//!	Read history output message
+	bool ReadHisMessage();
 
 //!	Calculate global equation numbers corresponding to every degree of freedom of each node
 	void CalculateEquationNumber();
@@ -168,9 +167,6 @@ public:
 //!	Return the number of concentrated loads applied in each load case
 	inline unsigned int* GetNLOAD() { return NLOAD; }
 
-//!	Return the number of solving type
-	inline unsigned int GetSType() { return Type; }
-
 //!	Return the list of load cases
 	inline CLoadCaseData* GetLoadCases() { return LoadCases; }
 
@@ -180,5 +176,10 @@ public:
 //!	Return pointer to the banded mass matrix
 	inline CSkylineMatrix<double>* GetMassMatrix() { return C_MassMatrix; }
 
+//! Return the number of freedoms for history output
+	inline int GetNumHisFreedom() { return Num_His_Output; }
+
+//! Return the messages of freedoms for history output
+	inline int* GetMessHisFreedom() { return His_freedom; }
 
 };

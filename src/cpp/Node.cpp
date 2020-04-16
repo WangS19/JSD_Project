@@ -44,6 +44,9 @@ bool CNode::Read(ifstream& Input, unsigned int np)
 	Input >> bcode[0] >> bcode[1] >> bcode[2]
 		  >> XYZ[0] >> XYZ[1] >> XYZ[2];
 
+	for (unsigned int i = 0; i < 3; i++)
+		XYZ_0[i] = XYZ[i];
+
 	return true;
 }
 

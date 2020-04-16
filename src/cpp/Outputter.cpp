@@ -109,7 +109,9 @@ void COutputter::OutputNodeInfo()
 	*this << "      NUMBER OF LOAD CASES . . . . . . . . . . . (NLCASE) =" << setw(6) << NLCASE << endl;
 	*this << "      SOLUTION MODE  . . . . . . . . . . . . . . (MODEX)  =" << setw(6) << MODEX << endl;
 	*this << "         EQ.0, DATA CHECK" << endl
-		  << "         EQ.1, EXECUTION" << endl
+		  << "         EQ.1, STATISTIC" << endl
+		  << "         EQ.2, MODAL ANALYSIS" << endl
+		  << "         EQ.3, DYNAMICS" << endl
 		  << endl;
 
 	*this << " N O D A L   P O I N T   D A T A" << endl << endl;
@@ -289,28 +291,6 @@ void COutputter::OutputLoadInfo()
 	}
 }
 
-//! Print solving type
-void COutputter::OutputSolveTypeInfo()
-{
-	CDomain* FEMData = CDomain::Instance();
-	int type = FEMData->GetSType();
-
-	*this << setiosflags(ios::scientific);
-	*this << " S O L V I N G   T Y P E" << endl;
-	if (type == 1) 
-		*this << " 1 -- Static"
-			  << endl;		
-	else if (type == 2)
-		*this << " 2 -- Modal"
-	          << endl;
-	else if (type == 3)
-		*this << " 3 -- Dynamics"
-		      << endl;
-	else
-		*this << "E R R : No such solving type"
-		      << endl;
-}
-
 //	Print nodal displacement
 void COutputter::OutputNodalDisplacement(unsigned int lcase)
 {
@@ -438,10 +418,12 @@ void COutputter::OutputTecplot(int step)
 	unsigned int NUMEG = FEMData->GetNUMEG();
 	unsigned int NUMNP = FEMData->GetNUMNP();
 	unsigned int NUME = 0;
+	int Element_Type;
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
 	{
 		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
 		NUME += EleGrp.GetNUME();
+		Element_Type = EleGrp.GetEType();			// Assumed only one kind element type
 	}
 
 	if (step == 0) {
@@ -452,7 +434,10 @@ void COutputter::OutputTecplot(int step)
 	}
 	
 	OutputFile << setiosflags(ios::right) << setiosflags(ios::fixed);
-	OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT "<< "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	if (Element_Type == 2)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT "<< "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	else if (Element_Type == 1)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl; 
 
 	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
 	double* dis_vector = new double[3 * NUMNP];
@@ -463,8 +448,8 @@ void COutputter::OutputTecplot(int step)
 		for (int i = 0; i < NUMNP; i++) {
 			for (int j = 0; j < 3; j++) {
 				if (NodeList[i].bcode[j] != 0) {
-					dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * 1000;		// A 10000 time of the displacement is plotted
-					NodeList[i].XYZ[j] += dis_vector[k] ;
+					dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * Dis_scale;	
+					NodeList[i].XYZ[j] = NodeList[i].XYZ_0[j] + dis_vector[k];
 				}
 				k += 1;
 			}
@@ -473,6 +458,66 @@ void COutputter::OutputTecplot(int step)
 
 	for (int i = 0; i < NUMNP; i++) {
 		double disp = sqrt(dis_vector[3 * i]* dis_vector[3 * i]+ dis_vector[3 * i + 1] * dis_vector[3 * i + 1]+ dis_vector[3 * i + 2] * dis_vector[3 * i + 2]);
+		OutputFile << setw(12) << setprecision(4) << NodeList[i].XYZ[0] << setw(12) << setprecision(4) << NodeList[i].XYZ[1] << setw(12) << setprecision(4) << NodeList[i].XYZ[2] << setw(12) << setprecision(4) << disp << endl;
+	}
+
+
+	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++) {
+		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
+		int Num_Node = EleGrp[0].GetNN();
+		for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		{
+			for (int N_n = 0; N_n < Num_Node; N_n++)
+			{
+				OutputFile << setw(12) << EleGrp[Ele].GetNodes()[N_n]->NodeNumber;
+			}
+			OutputFile << endl;
+		}
+	}
+
+
+}
+
+//! Overload: Output into tecplot (for dynamics analysis)
+void COutputter::OutputTecplot(double time, double* dis)
+{
+	CDomain* FEMData = CDomain::Instance();
+	CNode* NodeList = FEMData->GetNodeList();
+	unsigned int NUMEG = FEMData->GetNUMEG();
+	unsigned int NUMNP = FEMData->GetNUMNP();
+	unsigned int NUME = 0;
+	int Element_Type;
+	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
+	{
+		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
+		NUME += EleGrp.GetNUME();
+		Element_Type = EleGrp.GetEType();			// Assumed only one kind element type
+	}
+
+	OutputFile << setiosflags(ios::right) << setiosflags(ios::fixed);
+	if (Element_Type == 2)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	else if (Element_Type == 1)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl;
+
+	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
+	double* dis_vector = new double[3 * NUMNP];
+	int k = 0;
+	for (int i = 0; i < 3 * NUMNP; i++)
+		dis_vector[i] = 0.0;
+	
+	for (int i = 0; i < NUMNP; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (NodeList[i].bcode[j] != 0) {
+				dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * Dis_scale;	
+				NodeList[i].XYZ[j] = NodeList[i].XYZ_0[j] + dis_vector[k];
+			}
+			k += 1;
+		}
+	}
+
+	for (int i = 0; i < NUMNP; i++) {
+		double disp = sqrt(dis_vector[3 * i] * dis_vector[3 * i] + dis_vector[3 * i + 1] * dis_vector[3 * i + 1] + dis_vector[3 * i + 2] * dis_vector[3 * i + 2]);
 		OutputFile << setw(12) << setprecision(4) << NodeList[i].XYZ[0] << setw(12) << setprecision(4) << NodeList[i].XYZ[1] << setw(12) << setprecision(4) << NodeList[i].XYZ[2] << setw(12) << setprecision(4) << disp << endl;
 	}
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++) {
@@ -489,14 +534,17 @@ void COutputter::OutputTecplot(int step)
 	}
 }
 
+
 //	Print motion of certain freedom against time
-void COutputter::OutputHisMessage(double time, double dis, double vel, double acc)
+void COutputter::OutputHisMessage(double time, double* dis, double* vel, double* acc, int N, int* Freedoms)
 {
 
 	OutputFile << setiosflags(ios::scientific);
 
-	OutputFile << setw(12) << setprecision(4) <<   time << setw(12) << setprecision(4) << dis << setw(12) << setprecision(4) << vel << setw(12) << setprecision(4) <<  acc;
-
+	OutputFile << setw(12) << setprecision(4) << time;
+	for (unsigned int i = 0; i < N; i++) {
+		OutputFile << setw(12) << setprecision(4) << dis[Freedoms[i]-1] << setw(12) << setprecision(4) << vel[Freedoms[i]-1] << setw(12) << setprecision(4) << acc[Freedoms[i]-1];
+	}
 	OutputFile << endl;
 }
 

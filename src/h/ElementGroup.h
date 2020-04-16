@@ -104,4 +104,7 @@ public:
 
 	//! Return the number of Gauss points
 	unsigned int GetNG() { return N_G; }
+
+	//! Return the Element type
+	int GetEType() { return ElementType_; }
 };

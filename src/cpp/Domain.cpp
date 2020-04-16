@@ -43,7 +43,6 @@ CDomain::CDomain()
 	Force = nullptr;
 	StiffnessMatrix = nullptr;
 
-	Type = 1;
 }
 
 //	Desconstructor
@@ -99,11 +98,6 @@ bool CDomain::ReadData(string FileName, string OutFile)
 	CalculateEquationNumber();
 	Output->OutputEquationNumber();
 
-//  Read the solving type
-	if (ReadSolveType())
-		Output->OutputSolveTypeInfo();
-	else
-		return false;
 
 //	Read load data
 	if (ReadLoadCases())
@@ -116,6 +110,13 @@ bool CDomain::ReadData(string FileName, string OutFile)
         Output->OutputElementInfo();
     else
         return false;
+
+//	Read history output message
+	if (MODEX == 3)
+		if (!ReadHisMessage())
+			return false;
+
+//  Read Animation output message
 
 	return true;
 }
@@ -162,7 +163,7 @@ bool CDomain::ReadLoadCases()
 
 //	Loop over for all load cases
 	for (unsigned int lcase = 0; lcase < NLCASE; lcase++)
-		if (!LoadCases[lcase].Read(Input, lcase, Type))
+		if (!LoadCases[lcase].Read(Input, lcase, MODEX))
 			return false;
 
 	return true;
@@ -181,6 +182,20 @@ bool CDomain::ReadElements()
     
     return true;
 }
+
+//	Read history output message
+bool CDomain::ReadHisMessage()
+{
+	
+	Input >> Num_His_Output;
+	His_freedom = new int[Num_His_Output * 2];
+	for (int i = 0; i < Num_His_Output * 2; i++) {
+		Input >> His_freedom[i];
+	}
+
+	return true;
+}
+
 
 //	Calculate column heights
 void CDomain::CalculateColumnHeights()
@@ -331,9 +346,3 @@ void CDomain::AllocateMatrices()
 	Output->OutputTotalSystemData();
 }
 
-//!	Read the solving type
-bool CDomain::ReadSolveType()
-{
-	Input >> Type;
-	return true;
-}

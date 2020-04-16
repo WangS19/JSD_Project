@@ -23,6 +23,8 @@ private:
 //!	File stream for output
 	ofstream OutputFile;
 
+//! Enlarge the dis by a scale
+	double Dis_scale = 100.0;
 
 protected:
 
@@ -69,9 +71,6 @@ public:
 //!	Output Q4 element data
 	void PrintQ4ElementData(unsigned int EleGrp);
 
-//! Output solving type
-	void OutputSolveTypeInfo();
-
 //!	Output load data 
 	void OutputLoadInfo(); 
 
@@ -84,11 +83,14 @@ public:
 //!	Print total system data
 	void OutputTotalSystemData();
 
-//! Output into tecplot
+//! Output into tecplot (for stastic and modal analysis)
 	void OutputTecplot(int step);
 
+//! Overload: Output into tecplot (for dynamics analysis)
+	void OutputTecplot(double time, double* dis);
+
 //! Print motion of certain freedom against time
-	void OutputHisMessage(double time, double dis, double vel, double acc);
+	void OutputHisMessage(double time, double* dis, double* vel, double* acc, int N, int* Freedoms);
 
 //! Overload the operator <<
 	template <typename T>

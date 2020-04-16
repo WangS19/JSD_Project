@@ -123,8 +123,8 @@ private:
 	double rho = 0.5;
 
 	//! Damping coefficient *******
-	double C_alpha = 0.1;
-	double C_beta = 0.1;
+	double C_alpha = 0.01;
+	double C_beta = 0.01;
 
 	//! The current motion message
 	double* dis;
@@ -149,8 +149,13 @@ private:
 	//! History Output
 	COutputter* His_Output;
 
+	//! Tecplot Output
+	COutputter* Tecplot_Output;
+	int TecplotOut_Interval = 5;
+
 	//! History output which freedom	*******
-	int Freedom_output[2] = { 6 , 1 };
+	int N_His_Freedom;
+	int* Freedom_output;
 
 public:
 
@@ -158,10 +163,10 @@ public:
 	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) {};
 
 	//! Integration
-	void G_alpha_Intregration(CLoadCaseData Load, int i_load);
+	void G_alpha_Intregration(CLoadCaseData& Load, int i_load);
 
 	//! Recall the motion messages of the end of the last load
-	void Recall_message(int iload, double* dis, double* vel, double* acc);
+	void Recall_message(int iload, double* dis, double* vel, double* acc, double* Force);
 
 	//! Store the motion messages of the last step
 	void Store_message(double* dis, double* vel, double* acc, double* Force);
@@ -173,6 +178,13 @@ public:
 	void Obtain_NodeList(CNode* N_list) { NodeList = N_list; }
 
 	//! Obtain the histoty output file
-	void Obtain_HisOutput(COutputter* H_Output) { His_Output = H_Output; }
+	void Obtain_HisOutput(COutputter* H_Output, int N_History_Freedom, int* Freedom_message_output) {
+		His_Output = H_Output; 
+		N_His_Freedom = N_History_Freedom;
+		Freedom_output = Freedom_message_output;
+	}
+
+	//! Obtain the Tecplot output file
+	void Obtain_TecOutput(COutputter* Tec_Output) { Tecplot_Output = Tec_Output; }
 
 };
