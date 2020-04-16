@@ -31,6 +31,8 @@ protected:
 
 	CSkylineMatrix<double>* M;
 
+	CSkylineMatrix<double>* C;
+
 	// The lumped mass matrix
 	double* L_M;
 
@@ -119,6 +121,10 @@ class CG_alpha : public CSolver
 private:
 	//! spectral radius	*******
 	double rho = 0.5;
+
+	//! Damping coefficient *******
+	double C_alpha = 0.1;
+	double C_beta = 0.1;
 
 	//! The current motion message
 	double* dis;

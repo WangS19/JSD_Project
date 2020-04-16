@@ -84,7 +84,10 @@ public:
     inline unsigned int size() const;
 
 //! Generate the effecitve stiffness matrix
-	inline void Generate_Ke(CSkylineMatrix<T_>* K, double* M, double m1, double m3);
+	inline void Generate_Ke(CSkylineMatrix<T_>* K, CSkylineMatrix<T_>* C, double* M, double m1, double m2, double m3);
+
+//! Generate the damping matrix C
+	inline void Generate_C(CSkylineMatrix<T_>* K, double * M, double alpha, double beta);
 
 }; /* class definition */
 
@@ -280,7 +283,7 @@ void CSkylineMatrix<T_>::CalculateDiagnoalAddress()
 
 //! Generate the effecitve stiffness matrix
 template <class T_>
-void CSkylineMatrix<T_>::Generate_Ke(CSkylineMatrix<T_>* K, double* M, double m1, double m3)
+void CSkylineMatrix<T_>::Generate_Ke(CSkylineMatrix<T_>* K, CSkylineMatrix<T_>* C, double* M, double m1, double m2, double m3)
 {
 	// Copy other message from K (other than data_)
 	NWK_ = K->NWK_;
@@ -293,11 +296,35 @@ void CSkylineMatrix<T_>::Generate_Ke(CSkylineMatrix<T_>* K, double* M, double m1
 	// Calculate the data in the K_e matrix
 	unsigned int* MAXA = GetDiagonalAddress();
 	for (unsigned int i = 0; i < NWK_; i++) {
-		data_[i] = m1 * K->data_[i];
+		data_[i] = m1 * K->data_[i] + m2 * C->data_[i];
 	}
 	for (unsigned int i = 0; i < NEQ_; i++) {
 		int j = MAXA[i];
 		data_[j - 1] += m3 * M[i];
+	}
+
+}
+
+//! Generate the lamping matrix C
+template <class T_>
+void CSkylineMatrix<T_>::Generate_C(CSkylineMatrix<T_>* K, double* M, double alpha, double beta)
+{
+	// Copy other message from K (other than data_)
+	NWK_ = K->NWK_;
+	NEQ_ = K->NEQ_;
+	MK_ = K->MK_;
+	for (unsigned int i = 0; i < NEQ_; i++) ColumnHeights_[i] = K->ColumnHeights_[i];
+	for (unsigned int i = 0; i < NEQ_ + 1; i++) DiagonalAddress_[i] = K->DiagonalAddress_[i];
+	data_ = new T_[NWK_];
+
+	 //Calculate the data in the C matrix
+	unsigned int* MAXA = GetDiagonalAddress();
+	for (unsigned int i = 0; i < NWK_; i++) {
+		data_[i] = beta * K->data_[i];
+	}
+	for (unsigned int i = 0; i < NEQ_; i++) {
+		int j = MAXA[i];
+		data_[j - 1] += alpha * M[i];
 	}
 
 }

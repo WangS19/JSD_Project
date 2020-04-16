@@ -57,6 +57,7 @@ void CSolver::Cal_LM()
 	}
 }
 
+
 // Perform L*D*L(T) factorization of any of the matrix with skyline form
 void CSolver::LDLT(CSkylineMatrix<double>* KK)
 {
@@ -270,6 +271,11 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 	// Calculate the lumped mass matrix
 	Cal_LM();
 
+	// Calculate the lamping matrix C
+	int NEQ = M->dim();
+	C = new CSkylineMatrix<double>(NEQ);
+	C->Generate_C(K, L_M, C_alpha, C_beta);
+
 	// Give the parameter of the NOCH method in Table I of the paper
 	double alpha = (2 * rho - 1) / (1 + rho);
 	double delta = (3 * rho - 1) / 2.0 / (1 + rho);
@@ -297,7 +303,6 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 	double m15 = -epso / beta;
 
 	// Initialize the dis, vel and acc and them at t - h dis_p, vel_p, acc_p
-	int NEQ = M->dim();
 	double* dis_p = new double[NEQ];
 	double* vel_p = new double[NEQ];
 	double* acc_p = new double[NEQ];
@@ -314,7 +319,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 		for (unsigned int i = 0; i < NEQ; i++){
 			acc_p[i] = Force_p[i];
 			for (unsigned int j = 0; j < NEQ; j++)
-				acc_p[i] -= (*K)(i+1, j+1) * dis[j];
+				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
 			acc_p[i] /= L_M[i];
 		}
 		int num_freedom = NodeList[Freedom_output[0] - 1].bcode[Freedom_output[1] - 1];
@@ -323,7 +328,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 
 	// Genarate the effective stiffness matrix K_e -- Eq(60)
 	CSkylineMatrix<double>* K_e = new CSkylineMatrix<double>(NEQ);
-	K_e->Generate_Ke(K, L_M, m1, m3);
+	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
 	// ****for debug****
 	unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
@@ -361,6 +366,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData Load, int i_load)
 				if ((j - i - H < 0) && (i - j - H < 0))
 				{
 					F_e[i] += m9 * (*K)(i + 1, j + 1) * dis_p[j];
+					F_e[i] += (*C)(i + 1, j + 1) * (m2 * dis_p[j] + m7 * vel_p[j] + m8 * acc_p[j]);
 				}	
 			}
 		}
