@@ -123,8 +123,8 @@ private:
 	double rho = 0.5;
 
 	//! Damping coefficient *******
-	double C_alpha = 0.01;
-	double C_beta = 0.01;
+	double C_alpha;
+	double C_beta;
 
 	//! The current motion message
 	double* dis;
@@ -138,7 +138,7 @@ private:
 	double* Force;
 
 	//! The time step	*******
-	double h = 0.01;
+	double h;
 
 	//! The minimal quantity
 	const double eps = 1e-16;

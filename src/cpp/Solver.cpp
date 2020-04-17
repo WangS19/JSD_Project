@@ -334,17 +334,17 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
 	//// ****for debug****
-	//unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
-	//cout << setiosflags(ios::scientific) << setprecision(5);
-	//for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
-	//	cout << setw(14) << (*K_e)(i);
+	unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
+	cout << setiosflags(ios::scientific) << setprecision(5);
+	for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
+		cout << setw(14) << (*K_e)(i);
 
-	//	if ((i + 1) % 6 == 0)
-	//	{
-	//		cout << endl;
-	//	}
-	//}
-	//cout << endl;
+		if ((i + 1) % 6 == 0)
+		{
+			cout << endl;
+		}
+	}
+	cout << endl;
 	
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
