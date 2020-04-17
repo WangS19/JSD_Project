@@ -98,6 +98,9 @@ bool CDomain::ReadData(string FileName, string OutFile)
 	CalculateEquationNumber();
 	Output->OutputEquationNumber();
 
+//  Read the dynamics parameters
+	if (MODEX == 3)
+		Input >> Dyna_para[0] >> Dyna_para[1] >> Dyna_para[2];
 
 //	Read load data
 	if (ReadLoadCases())

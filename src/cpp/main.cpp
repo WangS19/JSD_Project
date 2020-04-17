@@ -152,6 +152,8 @@ int main(int argc, char *argv[])
 
 		G_alpha_->Obtain_NodeList(FEMData->GetNodeList());
 
+		G_alpha_->Obtain_Dyn_Para(FEMData->GetDynPara());
+
 		//  Output the history result of certain freedom
 		COutputter* His_Output = COutputter::His_Instance(HisFile);
 		G_alpha_->Obtain_HisOutput(His_Output, FEMData->GetNumHisFreedom(), FEMData->GetMessHisFreedom());

@@ -87,6 +87,9 @@ private:
 	int Num_His_Output;
 	int* His_freedom;
 
+//! Time interval and damping coefficients
+	double Dyna_para[3];
+
 
 public:
 
@@ -181,5 +184,8 @@ public:
 
 //! Return the messages of freedoms for history output
 	inline int* GetMessHisFreedom() { return His_freedom; }
+
+//! Return the dynamics parameters
+	inline double* GetDynPara() { return Dyna_para; }
 
 };

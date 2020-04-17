@@ -119,7 +119,7 @@ public:
 class CG_alpha : public CSolver
 {
 private:
-	//! spectral radius	*******
+	//! spectral radius
 	double rho = 0.5;
 
 	//! Damping coefficient *******
@@ -153,7 +153,7 @@ private:
 	COutputter* Tecplot_Output;
 	int TecplotOut_Interval = 5;
 
-	//! History output which freedom	*******
+	//! History output which freedom
 	int N_His_Freedom;
 	int* Freedom_output;
 
@@ -186,5 +186,12 @@ public:
 
 	//! Obtain the Tecplot output file
 	void Obtain_TecOutput(COutputter* Tec_Output) { Tecplot_Output = Tec_Output; }
+
+	//! Obtain the dynamics parameters
+	void Obtain_Dyn_Para(double* Dyn_Para) {
+		h = Dyn_Para[0];
+		C_alpha = Dyn_Para[1];
+		C_beta = Dyn_Para[2];
+	}
 
 };
