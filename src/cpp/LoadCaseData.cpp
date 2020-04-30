@@ -17,9 +17,14 @@ using namespace std;
 
 CLoadCaseData :: ~CLoadCaseData()
 {
-	delete [] node;
-	delete [] dof;
-	delete [] load;
+	delete[] node;
+	delete[] dof;
+	delete[] load;
+	delete[] a_;
+	delete[] b_;
+	delete[] c_;
+	delete[] d_;
+	delete[] e_;
 }
 
 void CLoadCaseData :: Allocate(unsigned int num)
@@ -28,12 +33,22 @@ void CLoadCaseData :: Allocate(unsigned int num)
 	node = new unsigned int[nloads];
 	dof = new unsigned int[nloads];
 	load = new double[nloads];
+	a_ = new double[nloads];
+	b_ = new double[nloads];
+	c_ = new double[nloads];
+	d_ = new double[nloads];
+	e_ = new double[nloads];
 }; 
 
 //	Read load case data from stream Input
-bool CLoadCaseData :: Read(ifstream& Input, unsigned int lcase)
+bool CLoadCaseData :: Read(ifstream& Input, unsigned int lcase, int L_type)
 {
 //	Load case number (LL) and number of concentrated loads in this load case(NL)
+
+	if (L_type == 2)
+	{
+		return true;
+	}
 	
 	unsigned int LL, NL;
 
@@ -50,9 +65,20 @@ bool CLoadCaseData :: Read(ifstream& Input, unsigned int lcase)
 
 	Allocate(NL);
 
-	for (unsigned int i = 0; i < NL; i++)
-		Input >> node[i] >> dof[i] >> load[i];
-
+//  L_type	1 -- static load
+//			3 -- time-history load
+	if (L_type == 1)
+	{
+		for (unsigned int i = 0; i < NL; i++)
+			Input >> node[i] >> dof[i] >> load[i];
+	}
+	else if (L_type == 3)
+	{
+		for (unsigned int i = 0; i < NL; i++)
+			Input >> node[i] >> dof[i] >> a_[i] >> b_[i] >> c_[i] >> d_[i] >> e_[i];
+		Input >> time_knot;
+	}
+	
 	return true;
 }
 

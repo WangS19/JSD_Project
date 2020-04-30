@@ -38,6 +38,9 @@ public:
 //!	Calculate element stiffness matrix
 	virtual void ElementStiffness(double* Matrix);
 
+//!	Calculate element mass matrix
+	virtual void ElementMass(double* Matrix);
+
 //!	Calculate element stress
 	virtual void ElementStress(double* stress, double* Displacement);
 

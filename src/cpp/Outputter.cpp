@@ -35,12 +35,13 @@ void COutputter::PrintTime(const struct tm* ptm, COutputter &output)
 
 COutputter* COutputter::_instance = nullptr;
 COutputter* COutputter::tec_instance = nullptr;
+COutputter* COutputter::his_instance = nullptr;
 
 //	Constructor
 COutputter::COutputter(string FileName)
 {
 	OutputFile.open(FileName);
-
+	Dis_scale = 100.0;
 	if (!OutputFile)
 	{
 		cerr << "*** Error *** File " << FileName << " does not exist !" << endl;
@@ -61,6 +62,13 @@ COutputter* COutputter::Tec_Instance(string FileName)
 	if (!tec_instance)
 		tec_instance = new COutputter(FileName);
 	return tec_instance;
+}
+//! Return the his instance of the class
+COutputter* COutputter::His_Instance(string FileName)
+{
+	if (!his_instance)
+		his_instance = new COutputter(FileName);
+	return his_instance;
 }
 
 //	Print program logo
@@ -101,7 +109,9 @@ void COutputter::OutputNodeInfo()
 	*this << "      NUMBER OF LOAD CASES . . . . . . . . . . . (NLCASE) =" << setw(6) << NLCASE << endl;
 	*this << "      SOLUTION MODE  . . . . . . . . . . . . . . (MODEX)  =" << setw(6) << MODEX << endl;
 	*this << "         EQ.0, DATA CHECK" << endl
-		  << "         EQ.1, EXECUTION" << endl
+		  << "         EQ.1, STATISTIC" << endl
+		  << "         EQ.2, MODAL ANALYSIS" << endl
+		  << "         EQ.3, DYNAMICS" << endl
 		  << endl;
 
 	*this << " N O D A L   P O I N T   D A T A" << endl << endl;
@@ -158,6 +168,7 @@ void COutputter::OutputElementInfo()
 			  << ElementType << endl;
 		*this << "     EQ.1, TRUSS ELEMENTS" << endl
 			  << "     EQ.2, Q4 ELEMENTS" << endl
+			  << "     EQ.8, AX8R ELEMENTS" << endl//yjl
 			  << "     EQ.3, NOT AVAILABLE" << endl
 			  << endl;
 
@@ -172,6 +183,9 @@ void COutputter::OutputElementInfo()
 				break;
 			case ElementTypes::Q4: // Bar element
 				PrintQ4ElementData(EleGrp);
+				break;
+			case ElementTypes::AX8R: // AX8R element yjl
+				PrintAX8RElementData(EleGrp);
 				break;
 		}
 	}
@@ -255,7 +269,44 @@ void COutputter::PrintQ4ElementData(unsigned int EleGrp)
 
 	*this << endl;
 }
+void COutputter::PrintAX8RElementData(unsigned int EleGrp) //yjl
+{
+	CDomain* FEMData = CDomain::Instance();
 
+	CElementGroup& ElementGroup = FEMData->GetEleGrpList()[EleGrp];
+	unsigned int NUMMAT = ElementGroup.GetNUMMAT();
+
+	*this << " M A T E R I A L   D E F I N I T I O N" << endl
+		<< endl;
+	*this << " NUMBER OF DIFFERENT SETS OF MATERIAL" << endl;
+	*this << " AND CROSS-SECTIONAL  CONSTANTS  . . . .( NPAR(3) ) . . =" << setw(5) << NUMMAT
+		<< endl
+		<< endl;
+
+	*this << "  SET       YOUNG'S     POISSON'S        DENSITY" << endl
+		  << " NUMBER     MODULUS       RATIO                    " << endl
+		  << "               E            v              rou     " << endl;
+
+	*this << setiosflags(ios::scientific) << setprecision(5);
+
+	//	Loop over for all property sets
+	for (unsigned int mset = 0; mset < NUMMAT; mset++)
+		ElementGroup.GetMaterial(mset).Write(*this, mset);
+
+	*this << endl
+		<< endl
+		<< " E L E M E N T   I N F O R M A T I O N" << endl;
+	*this << " ELEMENT     NODE     NODE     NODE     NODE     NODE     NODE     NODE     NODE       MATERIAL" << endl
+		  << " NUMBER-N      I        J        K        L        M        N        O        P       SET NUMBER" << endl;
+
+	unsigned int NUME = ElementGroup.GetNUME();
+
+	//	Loop over for all elements in group EleGrp
+	for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		ElementGroup[Ele].Write(*this, Ele);
+
+	*this << endl;
+}
 //	Print load data
 void COutputter::OutputLoadInfo()
 {
@@ -373,6 +424,31 @@ void COutputter::OutputElementStress()
 
 				break;
 
+		   case ElementTypes::AX8R: // AX8R element yjl
+				
+				for (unsigned int Ele = 0; Ele < NUME; Ele++)
+				{
+					CElement& Element = EleGrp[Ele];
+					double* stress = new double[NG * NG * 4];
+					*this << "Element Number" << setw(5) << Ele + 1 << endl;
+					//OutputFile << "Element Number" << setw(5) << Ele + 1 << endl;
+					Element.ElementStress(stress, Displacement);
+					*this << "Stress on GAUSS Points" << endl;
+					//OutputFile << "Stress on GAUSS Points" << endl;
+					for (int i = 0; i < NG * NG; i++) {
+						*this << "Stress on  Point" << setw(5) << i + 1 << endl;
+
+						*this << setw(20) << stress[4 * i + 0] << setw(20) << stress[4 * i + 1] 
+							  << setw(20) << stress[4 * i + 2] << setw(20) << stress[4 * i + 3] << endl;
+
+					}
+					delete[] stress;
+				}
+
+				*this << endl;
+
+				break;
+
 			default: // Invalid element type
 				cerr << "*** Error *** Elment type " << ElementType
 					<< " has not been implemented.\n\n";
@@ -408,10 +484,12 @@ void COutputter::OutputTecplot(int step)
 	unsigned int NUMEG = FEMData->GetNUMEG();
 	unsigned int NUMNP = FEMData->GetNUMNP();
 	unsigned int NUME = 0;
+	int Element_Type;
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
 	{
 		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
 		NUME += EleGrp.GetNUME();
+		Element_Type = EleGrp.GetEType();			// Assumed only one kind element type
 	}
 
 	if (step == 0) {
@@ -422,7 +500,10 @@ void COutputter::OutputTecplot(int step)
 	}
 	
 	OutputFile << setiosflags(ios::right) << setiosflags(ios::fixed);
-	OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT "<< "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	if (Element_Type == 2)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT "<< "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	else if (Element_Type == 1)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl; 
 
 	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
 	double* dis_vector = new double[3 * NUMNP];
@@ -433,8 +514,8 @@ void COutputter::OutputTecplot(int step)
 		for (int i = 0; i < NUMNP; i++) {
 			for (int j = 0; j < 3; j++) {
 				if (NodeList[i].bcode[j] != 0) {
-					dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * 1000;		// A 10000 time of the displacement is plotted
-					NodeList[i].XYZ[j] += dis_vector[k] ;
+					dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * Dis_scale;	
+					NodeList[i].XYZ[j] = NodeList[i].XYZ_0[j] + dis_vector[k];
 				}
 				k += 1;
 			}
@@ -443,6 +524,66 @@ void COutputter::OutputTecplot(int step)
 
 	for (int i = 0; i < NUMNP; i++) {
 		double disp = sqrt(dis_vector[3 * i]* dis_vector[3 * i]+ dis_vector[3 * i + 1] * dis_vector[3 * i + 1]+ dis_vector[3 * i + 2] * dis_vector[3 * i + 2]);
+		OutputFile << setw(12) << setprecision(4) << NodeList[i].XYZ[0] << setw(12) << setprecision(4) << NodeList[i].XYZ[1] << setw(12) << setprecision(4) << NodeList[i].XYZ[2] << setw(12) << setprecision(4) << disp << endl;
+	}
+
+
+	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++) {
+		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
+		int Num_Node = EleGrp[0].GetNN();
+		for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		{
+			for (int N_n = 0; N_n < Num_Node; N_n++)
+			{
+				OutputFile << setw(12) << EleGrp[Ele].GetNodes()[N_n]->NodeNumber;
+			}
+			OutputFile << endl;
+		}
+	}
+
+
+}
+
+//! Overload: Output into tecplot (for dynamics analysis)
+void COutputter::OutputTecplot(double time, double* dis)
+{
+	CDomain* FEMData = CDomain::Instance();
+	CNode* NodeList = FEMData->GetNodeList();
+	unsigned int NUMEG = FEMData->GetNUMEG();
+	unsigned int NUMNP = FEMData->GetNUMNP();
+	unsigned int NUME = 0;
+	int Element_Type;
+	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
+	{
+		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
+		NUME += EleGrp.GetNUME();
+		Element_Type = EleGrp.GetEType();			// Assumed only one kind element type
+	}
+
+	OutputFile << setiosflags(ios::right) << setiosflags(ios::fixed);
+	if (Element_Type == 2)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
+	else if (Element_Type == 1)
+		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl;
+
+	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
+	double* dis_vector = new double[3 * NUMNP];
+	int k = 0;
+	for (int i = 0; i < 3 * NUMNP; i++)
+		dis_vector[i] = 0.0;
+	
+	for (int i = 0; i < NUMNP; i++) {
+		for (int j = 0; j < 3; j++) {
+			if (NodeList[i].bcode[j] != 0) {
+				dis_vector[k] = dis[NodeList[i].bcode[j] - 1] * Dis_scale;	
+				NodeList[i].XYZ[j] = NodeList[i].XYZ_0[j] + dis_vector[k];
+			}
+			k += 1;
+		}
+	}
+
+	for (int i = 0; i < NUMNP; i++) {
+		double disp = sqrt(dis_vector[3 * i] * dis_vector[3 * i] + dis_vector[3 * i + 1] * dis_vector[3 * i + 1] + dis_vector[3 * i + 2] * dis_vector[3 * i + 2]);
 		OutputFile << setw(12) << setprecision(4) << NodeList[i].XYZ[0] << setw(12) << setprecision(4) << NodeList[i].XYZ[1] << setw(12) << setprecision(4) << NodeList[i].XYZ[2] << setw(12) << setprecision(4) << disp << endl;
 	}
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++) {
@@ -457,6 +598,20 @@ void COutputter::OutputTecplot(int step)
 			OutputFile << endl;
 		}
 	}
+}
+
+
+//	Print motion of certain freedom against time
+void COutputter::OutputHisMessage(double time, double* dis, double* vel, double* acc, int N, int* Freedoms)
+{
+
+	OutputFile << setiosflags(ios::scientific);
+
+	OutputFile << setw(12) << setprecision(4) << time;
+	for (unsigned int i = 0; i < N; i++) {
+		OutputFile << setw(12) << setprecision(4) << dis[Freedoms[i]-1] << setw(12) << setprecision(4) << vel[Freedoms[i]-1] << setw(12) << setprecision(4) << acc[Freedoms[i]-1];
+	}
+	OutputFile << endl;
 }
 
 #ifdef _DEBUG_
@@ -543,14 +698,71 @@ void COutputter::PrintStiffnessMatrix()
 	{
 		for (int J = 1; J <= NEQ; J++)
 		{
-			int H = DiagonalAddress[J] - DiagonalAddress[J - 1];
-			if (J - I - H >= 0)
+			int H;
+			if (J >= I)
+				H = DiagonalAddress[J] - DiagonalAddress[J - 1];
+			else
+				H = DiagonalAddress[I] - DiagonalAddress[I - 1];
+			if (J - I - H >= 0 || I - J - H >= 0)
 			{
 				*this << setw(14) << 0.0;
 			}
 			else
 			{
 				*this << setw(14) << (*StiffnessMatrix)(I, J);
+			}
+		}
+
+		*this << endl;
+	}
+
+	*this << endl;
+}
+
+//	Print banded and full mass matrix for debuging
+void COutputter::PrintMassMatrix()
+{
+	*this << "*** _Debug_ *** Banded mass matrix" << endl;
+
+	CDomain* FEMData = CDomain::Instance();
+
+	unsigned int NEQ = FEMData->GetNEQ();
+	CSkylineMatrix<double> *MassMatrix = FEMData->GetMassMatrix();
+	unsigned int* DiagonalAddress = MassMatrix->GetDiagonalAddress();
+
+	*this << setiosflags(ios::scientific) << setprecision(5);
+
+	for (unsigned int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++)
+	{
+		*this << setw(14) << (*MassMatrix)(i);
+
+		if ((i + 1) % 6 == 0)
+		{
+			*this << endl;
+		}
+	}
+
+	*this << endl
+		<< endl;
+
+	*this << "*** _Debug_ *** Full mass matrix" << endl;
+
+	for (int I = 1; I <= NEQ; I++)
+	{
+		for (int J = 1; J <= NEQ; J++)
+		{
+			int H;
+			if (J >= I)
+				H = DiagonalAddress[J] - DiagonalAddress[J - 1];
+			else
+				H = DiagonalAddress[I] - DiagonalAddress[I - 1];
+			if (J - I - H >= 0 || I - J - H >= 0)
+			{
+				*this << setw(14) << 0.0;
+			}
+			else
+			{
+				*this << setw(14) << (*MassMatrix)(I, J);
 			}
 		}
 

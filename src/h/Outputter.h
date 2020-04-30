@@ -23,6 +23,8 @@ private:
 //!	File stream for output
 	ofstream OutputFile;
 
+//! Enlarge the dis by a scale
+	double Dis_scale ;//= 100.0;
 
 protected:
 
@@ -33,6 +35,8 @@ protected:
 	static COutputter* _instance;
 //! Another instance class for tecplot
 	static COutputter* tec_instance;
+//! Another instance class for history message
+	static COutputter* his_instance;
 
 public:
 
@@ -43,6 +47,8 @@ public:
 	static COutputter* Instance(string FileName = " ");
 //! Return the tecplot instance of the class
 	static COutputter* Tec_Instance(string FileName = " ");
+//! Return the history instance of the class
+	static COutputter* His_Instance(string FileName = " ");
 
 //!	Output current time and date
 	void PrintTime(const struct tm * ptm, COutputter& output);
@@ -65,6 +71,9 @@ public:
 //!	Output Q4 element data
 	void PrintQ4ElementData(unsigned int EleGrp);
 
+//!	Output CAX8R element data
+	void PrintAX8RElementData(unsigned int EleGrp);//yjl
+
 //!	Output load data 
 	void OutputLoadInfo(); 
 
@@ -77,8 +86,14 @@ public:
 //!	Print total system data
 	void OutputTotalSystemData();
 
-//! Output into tecplot
+//! Output into tecplot (for stastic and modal analysis)
 	void OutputTecplot(int step);
+
+//! Overload: Output into tecplot (for dynamics analysis)
+	void OutputTecplot(double time, double* dis);
+
+//! Print motion of certain freedom against time
+	void OutputHisMessage(double time, double* dis, double* vel, double* acc, int N, int* Freedoms);
 
 //! Overload the operator <<
 	template <typename T>
@@ -101,6 +116,9 @@ public:
 
 //!	Print banded and full stiffness matrix for debuging
 	void PrintStiffnessMatrix();
+
+//!	Print banded and full mass matrix for debuging
+	void PrintMassMatrix();
 
 //!	Print address of diagonal elements for debuging
 	void PrintDiagonalAddress();

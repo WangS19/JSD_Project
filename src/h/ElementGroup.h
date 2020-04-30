@@ -17,7 +17,7 @@
 #include "Q4.h"
 #include "Material.h"
 #include "Node.h"
-
+#include "CAX8R.h"//yjl
 using namespace std;
 
 //! Define set of element types
@@ -30,7 +30,8 @@ enum ElementTypes
     H8,     // 8H element
     Beam,   // Beam element
     Plate,  // Plate element
-    Shell   // Shell elment
+    Shell,  // Shell elment
+	AX8R    //AX8R element yjl
 };
 
 //! Element group class
@@ -104,4 +105,7 @@ public:
 
 	//! Return the number of Gauss points
 	unsigned int GetNG() { return N_G; }
+
+	//! Return the Element type
+	int GetEType() { return ElementType_; }
 };

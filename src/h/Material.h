@@ -24,6 +24,8 @@ public:
 	
 	double E;  //!< Young's modulus
 
+	double rho;  //!<  Density
+
 public:
 
 //! Virtual deconstructor
@@ -61,6 +63,21 @@ public:
 	double miu;	// ! Poisson ratio
 	double t;  // ! Thickness
 	int ss; // ! 0 - Plane strain  1 - Plane stress
+
+public:
+
+	//!	Read material data from stream Input
+	virtual bool Read(ifstream& Input, unsigned int mset);
+
+	//!	Write material data to Stream
+	virtual void Write(COutputter& output, unsigned int mset);
+};
+class CAX8RMaterial : public CMaterial//yjl
+{
+public:
+
+	double rou; // ! density
+	double mu;	// ! Poisson ratio
 
 public:
 

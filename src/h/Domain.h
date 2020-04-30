@@ -9,7 +9,6 @@
 /*****************************************************************************/
 
 #pragma once
-
 #include "Node.h"
 #include "ElementGroup.h"
 #include "Outputter.h"
@@ -38,8 +37,10 @@ private:
 	char Title[256]; 
 
 //!	Solution MODEX
-/*!		0 : Data check only;
-		1 : Execution */
+//	0 -- Data check only
+//  1 -- static problem
+//  2 -- modal analysis
+//  3 -- dynamic problem
 	unsigned int MODEX;
 
 //!	Total number of nodal points
@@ -72,8 +73,22 @@ private:
     global stiffness matrix. */
     CSkylineMatrix<double>* StiffnessMatrix;
 
+//! Consistent mass matrix --- has the same for with the global stiffness matrix
+	CSkylineMatrix<double>* C_MassMatrix;
+
+//! Lumped mass matrix --- has the same length of NEQ
+	double* L_MassMatrix;
+
 //!	Global nodal force/displacement vector
 	double* Force;
+
+//! Output history messages of which freedom
+	int Num_His_Output;
+	int* His_freedom;
+
+//! Time interval and damping coefficients
+	double Dyna_para[3];
+
 
 public:
 
@@ -98,6 +113,9 @@ public:
 //!	Read element data
 	bool ReadElements();
 
+//!	Read history output message
+	bool ReadHisMessage();
+
 //!	Calculate global equation numbers corresponding to every degree of freedom of each node
 	void CalculateEquationNumber();
 
@@ -111,6 +129,9 @@ public:
 
 //!	Assemble the banded gloabl stiffness matrix
 	void AssembleStiffnessMatrix();
+
+//! Assemble the global mass matrix
+	void AssembleMassMatrix();
 
 //!	Assemble the global nodal force vector for load case LoadCase
 	bool AssembleForce(unsigned int LoadCase); 
@@ -153,5 +174,17 @@ public:
 
 //!	Return pointer to the banded stiffness matrix
 	inline CSkylineMatrix<double>* GetStiffnessMatrix() { return StiffnessMatrix; }
+
+//!	Return pointer to the banded mass matrix
+	inline CSkylineMatrix<double>* GetMassMatrix() { return C_MassMatrix; }
+
+//! Return the number of freedoms for history output
+	inline int GetNumHisFreedom() { return Num_His_Output; }
+
+//! Return the messages of freedoms for history output
+	inline int* GetMessHisFreedom() { return His_freedom; }
+
+//! Return the dynamics parameters
+	inline double* GetDynPara() { return Dyna_para; }
 
 };
