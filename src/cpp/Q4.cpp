@@ -159,6 +159,12 @@ void CQ4::ElementStiffness(double* Matrix)
 	}
 }
 
+//!	Calculate element mass matrix
+void CQ4::ElementMass(double* Matrix)
+{
+
+}
+
 //!	Calculate element stress
 void CQ4::ElementStress(double* stress, double* Displacement)
 {

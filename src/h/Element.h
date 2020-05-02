@@ -39,18 +39,19 @@ protected:
     unsigned int ND_;
 
 //£¡The Gauss points and Gauss weight functions
-	double XG[4][4] = { { 0, -0.5773502691896, -0.7745966692415, -0.8611363115941 },{ 0, 0.5773502691896, 0, -.3399810435849 },{ 0, 0, 0.7745966692415, 0.3399810435849 },{ 0, 0, 0, 0.8611363115941 } };
-	double WGT[4][4] = { { 2.0, 1.0, 0.5555555555556, 0.3478548451375 },{ 0, 1.0, 0.8888888888889, 0.6521451548625 },{ 0, 0, 0.5555555555556, 0.6521451548625 },{ 0, 0, 0, 0.3478548451375 } };
+	double XG[4][4];// = { { 0, -0.5773502691896, -0.7745966692415, -0.8611363115941 },{ 0, 0.5773502691896, 0, -.3399810435849 },{ 0, 0, 0.7745966692415, 0.3399810435849 },{ 0, 0, 0, 0.8611363115941 } };
+	double WGT[4][4];// = { { 2.0, 1.0, 0.5555555555556, 0.3478548451375 },{ 0, 1.0, 0.8888888888889, 0.6521451548625 },{ 0, 0, 0.5555555555556, 0.6521451548625 },{ 0, 0, 0, 0.3478548451375 } };
 
 //! The Jaccobi matrix
-	double det_J = 0;
+	double det_J;// = 0;
 
 
 public:
 
 
 //!	Constructor
-	CElement() : NEN_(0), nodes_(nullptr), ElementMaterial_(nullptr) {};
+	CElement(); 
+
 
 //! Virtual deconstructor
     virtual ~CElement() {
@@ -76,6 +77,9 @@ public:
 
 //!	Calculate element stiffness matrix (Upper triangular matrix, stored as an array column by colum)
 	virtual void ElementStiffness(double* stiffness) = 0; 
+
+//!	Calculate element mass matrix (Upper triangular matrix, stored as an array column by colum)
+	virtual void ElementMass(double* stiffness) = 0;
 
 //!	Calculate element stress 
 	virtual void ElementStress(double* stress, double* Displacement) = 0;

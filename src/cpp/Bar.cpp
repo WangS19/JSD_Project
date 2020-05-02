@@ -133,6 +133,44 @@ void CBar::ElementStiffness(double* Matrix)
 	Matrix[20] = -k*DX2[5];
 }
 
+//!	Calculate element mass matrix
+void CBar::ElementMass(double* Matrix)
+{
+	clear(Matrix, SizeOfStiffnessMatrix());
+
+	//	Calculate bar length
+	double DX[3];		//	dx = x2-x1, dy = y2-y1, dz = z2-z1
+	for (unsigned int i = 0; i < 3; i++)
+		DX[i] = nodes_[1]->XYZ[i] - nodes_[0]->XYZ[i];
+
+	double DX2[6];	//  Quadratic polynomial (dx^2, dy^2, dz^2, dx*dy, dy*dz, dx*dz)
+	DX2[0] = DX[0] * DX[0];
+	DX2[1] = DX[1] * DX[1];
+	DX2[2] = DX[2] * DX[2];
+	DX2[3] = DX[0] * DX[1];
+	DX2[4] = DX[1] * DX[2];
+	DX2[5] = DX[0] * DX[2];
+
+	double L2 = DX2[0] + DX2[1] + DX2[2];
+	double L = sqrt(L2);
+
+	CBarMaterial* material_ = dynamic_cast<CBarMaterial*>(ElementMaterial_);	// Pointer to material of the element
+
+	double mass = material_->rho * material_->Area * L;
+
+	Matrix[0] = mass / 3.0;
+	Matrix[1] = mass / 3.0;
+	Matrix[3] = mass / 3.0;
+	Matrix[6] = mass / 3.0;
+	Matrix[9] = mass / 6.0;
+	Matrix[10] = mass / 3.0;
+	Matrix[13] = mass / 6.0;
+	Matrix[15] = mass / 3.0;
+	Matrix[18] = mass / 6.0;
+
+}
+
+
 //	Calculate element stress 
 void CBar::ElementStress(double* stress, double* Displacement)
 {

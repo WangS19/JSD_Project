@@ -1,11 +1,8 @@
 /*****************************************************************************/
-/*     To acheive a plane strain element                                     */
-/*     WangShuai                                                             */
-/*     2020/3/14                                                             */
+/*     To acheive a CAX8R element                                            */
+/*     Yaojialun                                                             */
+/*     2020/4/14                                                             */
 /*****************************************************************************/
-
-//未实现质量矩阵
-
 #pragma once
 
 #include "Element.h"
@@ -14,15 +11,15 @@ using namespace std;
 
 //Plane strain element class
 
-class CQ4 : public CElement
+class CAX8R : public CElement
 {
 private:
 	
 	//! Calculate the elastic matrix
-	double D[3][3];
-	void Calculate_D(CQ4Material* material_,double D[][3]);
+	double D[4][4];
+	void Calculate_D(CAX8RMaterial* material_,double D[][4]);
 
-	double B[3][8];
+	double B[4][16];
 
 	//! The number of Gauss point in one direction
 	static int NG;
@@ -30,17 +27,26 @@ private:
 	int NGauss;
 
 	//! Calculate B matrix and Jaccobi matrix
-	void STDM(CNode** nodes_, double B[][8], double Jac, double XX, double YY);
+	void Get_BMat(CNode** nodes_, double B[4][16], double& Jac, double& r, double g, double h);
+	//For Get_BMat:
+	//! Interpolation Function N[8]
+	void GetN_2D_SecOrder(double N[8],double g, double h);
+	//!dN= [dNdg dNdh]
+	void GetdN_2D_SecOrder(double dN[8][2],double g, double h);
+	//! Jacobian JMat=[dudg dudh; dwdg dwdh]
+	void Get_Jacobian2D(double JMat[2][2], double g, double h, double RZ[2][8]);
+
+
 
 
 public:
 
 
 	//!	Constructor
-	CQ4();
+	CAX8R();
 
 	//!	Deconstructor
-	~CQ4();
+	~CAX8R();
 
 	//!	Read element data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList);
@@ -56,13 +62,13 @@ public:
 	virtual void ElementStiffness(double* Matrix);
 
 	//!	Calculate element mass matrix
-	virtual void ElementMass(double* Matrix);
+	virtual void ElementMass(double* stiffness) ;
 
 	//!	Calculate element stress
 	virtual void ElementStress(double* stress, double* Displacement);
 
 	//!	Return the size of the element stiffness matrix (stored as an array column by column)
-	virtual unsigned int SizeOfStiffnessMatrix();
+	virtual unsigned int SizeOfStiffnessMatrix(){return 300;};
 
 	//! Get the number of Gauss point in one direction
 	virtual void GetNG(int N_G) { NG = N_G; };
