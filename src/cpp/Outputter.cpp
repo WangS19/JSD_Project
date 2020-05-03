@@ -41,7 +41,7 @@ COutputter* COutputter::his_instance = nullptr;
 COutputter::COutputter(string FileName)
 {
 	OutputFile.open(FileName);
-
+	Dis_scale = 100.0;
 	if (!OutputFile)
 	{
 		cerr << "*** Error *** File " << FileName << " does not exist !" << endl;
@@ -168,6 +168,7 @@ void COutputter::OutputElementInfo()
 			  << ElementType << endl;
 		*this << "     EQ.1, TRUSS ELEMENTS" << endl
 			  << "     EQ.2, Q4 ELEMENTS" << endl
+			  << "     EQ.8, AX8R ELEMENTS" << endl//yjl
 			  << "     EQ.3, NOT AVAILABLE" << endl
 			  << endl;
 
@@ -182,6 +183,9 @@ void COutputter::OutputElementInfo()
 				break;
 			case ElementTypes::Q4: // Bar element
 				PrintQ4ElementData(EleGrp);
+				break;
+			case ElementTypes::AX8R: // AX8R element yjl
+				PrintAX8RElementData(EleGrp);
 				break;
 		}
 	}
@@ -265,7 +269,44 @@ void COutputter::PrintQ4ElementData(unsigned int EleGrp)
 
 	*this << endl;
 }
+void COutputter::PrintAX8RElementData(unsigned int EleGrp) //yjl
+{
+	CDomain* FEMData = CDomain::Instance();
 
+	CElementGroup& ElementGroup = FEMData->GetEleGrpList()[EleGrp];
+	unsigned int NUMMAT = ElementGroup.GetNUMMAT();
+
+	*this << " M A T E R I A L   D E F I N I T I O N" << endl
+		<< endl;
+	*this << " NUMBER OF DIFFERENT SETS OF MATERIAL" << endl;
+	*this << " AND CROSS-SECTIONAL  CONSTANTS  . . . .( NPAR(3) ) . . =" << setw(5) << NUMMAT
+		<< endl
+		<< endl;
+
+	*this << "  SET       YOUNG'S     POISSON'S        DENSITY" << endl
+		  << " NUMBER     MODULUS       RATIO                    " << endl
+		  << "               E            v              rou     " << endl;
+
+	*this << setiosflags(ios::scientific) << setprecision(5);
+
+	//	Loop over for all property sets
+	for (unsigned int mset = 0; mset < NUMMAT; mset++)
+		ElementGroup.GetMaterial(mset).Write(*this, mset);
+
+	*this << endl
+		<< endl
+		<< " E L E M E N T   I N F O R M A T I O N" << endl;
+	*this << " ELEMENT     NODE     NODE     NODE     NODE     NODE     NODE     NODE     NODE       MATERIAL" << endl
+		  << " NUMBER-N      I        J        K        L        M        N        O        P       SET NUMBER" << endl;
+
+	unsigned int NUME = ElementGroup.GetNUME();
+
+	//	Loop over for all elements in group EleGrp
+	for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		ElementGroup[Ele].Write(*this, Ele);
+
+	*this << endl;
+}
 //	Print load data
 void COutputter::OutputLoadInfo()
 {
@@ -378,6 +419,31 @@ void COutputter::OutputElementStress()
 
 
 
+
+				*this << endl;
+
+				break;
+
+		   case ElementTypes::AX8R: // AX8R element yjl
+				
+				for (unsigned int Ele = 0; Ele < NUME; Ele++)
+				{
+					CElement& Element = EleGrp[Ele];
+					double* stress = new double[NG * NG * 4];
+					*this << "Element Number" << setw(5) << Ele + 1 << endl;
+					//OutputFile << "Element Number" << setw(5) << Ele + 1 << endl;
+					Element.ElementStress(stress, Displacement);
+					*this << "Stress on GAUSS Points" << endl;
+					//OutputFile << "Stress on GAUSS Points" << endl;
+					for (int i = 0; i < NG * NG; i++) {
+						*this << "Stress on  Point" << setw(5) << i + 1 << endl;
+
+						*this << setw(20) << stress[4 * i + 0] << setw(20) << stress[4 * i + 1] 
+							  << setw(20) << stress[4 * i + 2] << setw(20) << stress[4 * i + 3] << endl;
+
+					}
+					delete[] stress;
+				}
 
 				*this << endl;
 

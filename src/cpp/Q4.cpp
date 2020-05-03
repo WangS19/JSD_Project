@@ -162,6 +162,7 @@ void CQ4::ElementStiffness(double* Matrix)
 //!	Calculate element mass matrix
 void CQ4::ElementMass(double* Matrix)
 {
+
 	int n = SizeOfStiffnessMatrix();
 	clear(Matrix, n);
 
@@ -234,6 +235,7 @@ void CQ4::ElementMass(double* Matrix)
 			k += 1;
 		}
 	}
+
 }
 
 //!	Calculate element stress

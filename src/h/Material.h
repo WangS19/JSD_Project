@@ -72,3 +72,18 @@ public:
 	//!	Write material data to Stream
 	virtual void Write(COutputter& output, unsigned int mset);
 };
+class CAX8RMaterial : public CMaterial//yjl
+{
+public:
+
+	double rou; // ! density
+	double mu;	// ! Poisson ratio
+
+public:
+
+	//!	Read material data from stream Input
+	virtual bool Read(ifstream& Input, unsigned int mset);
+
+	//!	Write material data to Stream
+	virtual void Write(COutputter& output, unsigned int mset);
+};

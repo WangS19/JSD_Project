@@ -251,6 +251,7 @@ void CModal::Lanczos()
 
 	}
 
+
 }
 
 // To solve the standard eigenvalue problem with the Jacobi method
@@ -258,6 +259,7 @@ void CModal::Jacobi()
 {
 
 }
+
 
 // Use the Gram-Schmidt orthogonalization
 void CModal::Orth()
@@ -316,7 +318,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	if (t < eps)
 	{
 		Force_p = Cur_Force(t, Load);
-		for (unsigned int i = 0; i < NEQ; i++){
+		for (unsigned int i = 0; i < NEQ; i++) {
 			acc_p[i] = Force_p[i];
 			for (unsigned int j = 0; j < NEQ; j++)
 				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
@@ -326,7 +328,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		for (unsigned int i = 0; i < N_His_Freedom; i++) {
 			num_freedom[i] = NodeList[Freedom_output[2 * i] - 1].bcode[Freedom_output[2 * i + 1] - 1];
 		}
-		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom,num_freedom);
+		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
 	}
 
 	// Genarate the effective stiffness matrix K_e -- Eq(60)
@@ -345,7 +347,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	//	}
 	//}
 	//cout << endl;
-	
+
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
 
@@ -374,13 +376,12 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 				{
 					F_e[i] += m9 * (*K)(i + 1, j + 1) * dis_p[j];
 					F_e[i] += (*C)(i + 1, j + 1) * (m2 * dis_p[j] + m7 * vel_p[j] + m8 * acc_p[j]);
-				}	
+				}
 			}
 		}
 
 		// Back substitution, after calculation F_e will be the dis at current time -- Eq(63)
 		BackSubstitution(K_e, F_e);
-
 
 		// Compute the current vel and acc
 		for (unsigned int i = 0; i < NEQ; i++) {
@@ -401,13 +402,12 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 			cout << "Output Tecplot, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
 		}
-	
+
 		Tec_Count += 1;
 
 		// Store the motion messages of the last step
 		Store_message(dis_p, vel_p, acc_p, Force_p);
 	}
-
 }
 
 double* CG_alpha::Cur_Force(double time, CLoadCaseData& load)

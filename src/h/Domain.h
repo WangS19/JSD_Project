@@ -9,7 +9,6 @@
 /*****************************************************************************/
 
 #pragma once
-
 #include "Node.h"
 #include "ElementGroup.h"
 #include "Outputter.h"

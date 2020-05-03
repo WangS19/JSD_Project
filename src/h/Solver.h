@@ -76,16 +76,16 @@ class CModal : public CSolver
 private:
 
 	//! The tolerance for Jacobi
-	double Tol_J = 1.0e-9;
+	double Tol_J; //= 1.0e-9;
 
 	//! The tolerance for Lanczos
-	double Tol_L = 1.0e-9;
+	double Tol_L; //= 1.0e-9;
 
 	//! Number of required eigenvalues *(Input)
-	int Nroot = 2;
+	int Nroot; //= 2;
 
 	//! Maximum number of the restart, set 5 usually
-	int N_ite_max = 5;
+	int N_ite_max; //= 5;
 
 	//! Number of itegration vectors used
 	//! Usually set to be min(2*Nroot, Nroot+8), but less than the freedom of system
@@ -102,7 +102,7 @@ private:
 public:
 
 	//! Constructor
-	CModal(CSkylineMatrix<double>* K) : CSolver(K) {};
+	CModal(CSkylineMatrix<double>* K) : CSolver(K),Tol_J(1.0e-9),Tol_L(1.0e-9),Nroot(2),N_ite_max(5) {};
 
 	//! To solve the generalized eigenproblem with the Lanczos method
 	void Lanczos();
@@ -120,11 +120,13 @@ class CG_alpha : public CSolver
 {
 private:
 	//! spectral radius
+
 	double rho = 0.5;
 
 	//! Damping coefficient *******
 	double C_alpha;
 	double C_beta;
+
 
 	//! The current motion message
 	double* dis;
@@ -138,6 +140,7 @@ private:
 	double* Force;
 
 	//! The time step	*******
+
 	double h;
 
 	//! The minimal quantity
@@ -151,7 +154,9 @@ private:
 
 	//! Tecplot Output
 	COutputter* Tecplot_Output;
+
 	int TecplotOut_Interval = 20;
+
 
 	//! History output which freedom
 	int N_His_Freedom;
@@ -160,7 +165,9 @@ private:
 public:
 
 	//! Constructor
+
 	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) {};
+
 
 	//! Integration
 	void G_alpha_Intregration(CLoadCaseData& Load, int i_load);

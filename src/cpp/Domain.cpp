@@ -261,7 +261,9 @@ void CDomain::AssembleStiffnessMatrix()
 
 }
 
+
 //  Assemble the global mass matrix
+
 void CDomain::AssembleMassMatrix()
 {
 	//	Loop over for all element groups
