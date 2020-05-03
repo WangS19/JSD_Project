@@ -793,9 +793,9 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 					delete[] stress;
 				//output averagestress
 					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
-					OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
-					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[3] << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << averagestress[3] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << averagestress[2] << endl;
 					OutputFile << endl;
 				}
 				break;
@@ -1054,9 +1054,9 @@ void COutputter::OutputVTKElemStress()
 				delete[] stress;
 				//output averagestress
 				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
-				OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
-				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[3] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << averagestress[3] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << averagestress[2] << endl;
 				OutputFile << endl;
 			}
 			break;
