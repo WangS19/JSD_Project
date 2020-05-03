@@ -24,6 +24,8 @@ public:
 	
 	double E;  //!< Young's modulus
 
+	double rho;  //!<  Density
+
 public:
 
 //! Virtual deconstructor

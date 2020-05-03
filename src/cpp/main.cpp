@@ -41,7 +41,11 @@ int main(int argc, char *argv[])
     string InFile = filename + ".dat";
 	string OutFile = filename + ".out";
 	string TecFile = filename + "_tec.dat";
+
 	string vtkFile = filename + ".vtk";
+
+	string HisFile = filename + ".his";
+
 
 	CDomain* FEMData = CDomain::Instance();
 
@@ -54,6 +58,7 @@ int main(int argc, char *argv[])
 		cerr << "*** Error *** Data input failed!" << endl;
 		exit(1);
 	}
+
 //  Output the result in tecplot form at the beginning including the head
 	COutputter* Tec_Output = COutputter::Tec_Instance(TecFile);
 	Tec_Output->OutputTecplot(0);
@@ -73,55 +78,123 @@ int main(int argc, char *argv[])
     
 //  Assemble the banded gloabl stiffness matrix
 	FEMData->AssembleStiffnessMatrix();
+
+//  Assemble the global mass matrix  1--consistent mass matrix  2--lumped mass matrix
+	FEMData->AssembleMassMatrix();
     
     double time_assemble = timer.ElapsedTime();
+	COutputter* Output = COutputter::Instance();
+	double time_solution = 0.0;
 
-//  Solve the linear equilibrium equations for displacements
-	CLDLTSolver* Solver = new CLDLTSolver(FEMData->GetStiffnessMatrix());
+	int Solving_Type = FEMData->GetMODEX();
+
+// ****************************************** //
+// ***  For the stastic problem calculate *** //
+// ****************************************** //
+	if (Solving_Type == 1)
+	{ 
+	//  Solve the linear equilibrium equations for displacements
+		CLDLTSolver* Solver = new CLDLTSolver(FEMData->GetStiffnessMatrix());
     
-//  Perform L*D*L(T) factorization of stiffness matrix
-    Solver->LDLT();
+	//  Perform L*D*L(T) factorization of stiffness matrix
+		Solver->LDLT();
 
-//  Modal Analysis
-	CModal* Modal_ = new CModal(FEMData->GetStiffnessMatrix());
-
-//  Lanczos method
-	Modal_->Lanczos();
-
-    COutputter* Output = COutputter::Instance();
-	
-
-#ifdef _DEBUG_
-    Output->PrintStiffnessMatrix();
-#endif
+	#ifdef _DEBUG_
+		Output->PrintStiffnessMatrix();
+	#endif
         
-//  Loop over for all load cases
-    for (unsigned int lcase = 0; lcase < FEMData->GetNLCASE(); lcase++)
-    {
-//      Assemble righ-hand-side vector (force vector)
-        FEMData->AssembleForce(lcase + 1);
+	//  Loop over for all load cases
+		for (unsigned int lcase = 0; lcase < FEMData->GetNLCASE(); lcase++)
+		{
+	//      Assemble righ-hand-side vector (force vector)
+			FEMData->AssembleForce(lcase + 1);
             
-//      Reduce right-hand-side force vector and back substitute
-        Solver->BackSubstitution(FEMData->GetForce());
+	//      Reduce right-hand-side force vector and back substitute
+			Solver->BackSubstitution(FEMData->GetForce());
             
-#ifdef _DEBUG_
-        Output->PrintDisplacement(lcase);
-#endif
+	#ifdef _DEBUG_
+			Output->PrintDisplacement(lcase);
+	#endif
             
-        Output->OutputNodalDisplacement(lcase);
-    }
+			Output->OutputNodalDisplacement(lcase);
+		}
 
-    double time_solution = timer.ElapsedTime();
+		time_solution = timer.ElapsedTime();
+
 
 //  Calculate and output stresses of all elements
 	Output->OutputElementStress();
 
 //  Output the result in vtk form
 	vtk_Output->OutputVTK();
+
     
-//  Output the result in tecplot form
+	//  Output the result in tecplot form
 	
-	Tec_Output->OutputTecplot(1);
+		Tec_Output->OutputTecplot(1);
+
+	}
+
+
+// ******************************** //
+// ***  For the modal calculate *** //
+// ******************************** //
+	else if (Solving_Type == 2)
+	{
+		//  Modal Analysis
+		CModal* Modal_ = new CModal(FEMData->GetStiffnessMatrix());
+
+		//  Lanczos method
+		Modal_->Lanczos();
+
+		time_solution = timer.ElapsedTime();
+
+		//  Output
+
+	}
+
+
+// ******************************************* //
+// ***  For the Dynamics problem calculate *** //
+// ******************************************* //
+	else if (Solving_Type == 3)
+	{
+		*Output << "S T A R T: D Y N A M I C S  A N A L Y S I S" << endl << endl;
+		// Dynamics analysis
+		CG_alpha* G_alpha_ = new CG_alpha(FEMData->GetStiffnessMatrix(), FEMData->GetMassMatrix());
+
+		CLoadCaseData* Loads = FEMData->GetLoadCases();
+
+		G_alpha_->Obtain_NodeList(FEMData->GetNodeList());
+
+		G_alpha_->Obtain_Dyn_Para(FEMData->GetDynPara());
+
+		//  Output the history result of certain freedom
+		COutputter* His_Output = COutputter::His_Instance(HisFile);
+		G_alpha_->Obtain_HisOutput(His_Output, FEMData->GetNumHisFreedom(), FEMData->GetMessHisFreedom());
+
+		// Tecplot Output
+		G_alpha_->Obtain_TecOutput(Tec_Output);
+
+		for (unsigned int i = 0; i < FEMData->GetNLCASE(); i++)
+		{
+			*Output << "	Begin the Load case		" << i + 1 << endl;
+			// Integration with the newly G_alpha method
+			G_alpha_->G_alpha_Intregration(Loads[i], i);
+			*Output << "	Finish the Load case		" << i + 1 << endl;
+		}
+
+
+
+		time_solution = timer.ElapsedTime();
+
+	}
+// ******************************************* //
+
+	else
+	{
+		*Output << "E R R: No such solving type!";
+	}
 
     double time_stress = timer.ElapsedTime();
     

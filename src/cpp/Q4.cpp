@@ -159,6 +159,83 @@ void CQ4::ElementStiffness(double* Matrix)
 	}
 }
 
+//!	Calculate element mass matrix
+void CQ4::ElementMass(double* Matrix)
+{
+	int n = SizeOfStiffnessMatrix();
+	clear(Matrix, n);
+
+	CQ4Material* material_ = dynamic_cast<CQ4Material*>(ElementMaterial_);
+
+	double MM[8][8];
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++)
+			MM[i][j] = 0;
+	}
+	double thic = material_->t;
+	double rho = material_->rho;
+	double C_m = thic * rho * det_J;
+	double a = 4.0 / 9.0;
+	double b = 2.0 / 9.0;
+	double c = 1.0 / 9.0;
+	MM[0][0] = a * C_m;
+	MM[0][2] = b * C_m;
+	MM[0][4] = c * C_m;
+	MM[0][6] = b * C_m;
+	MM[1][1] = a * C_m;
+	MM[1][3] = b * C_m;
+	MM[1][5] = c * C_m;
+	MM[1][7] = b * C_m;
+	MM[2][2] = a * C_m;
+	MM[2][4] = b * C_m;
+	MM[2][6] = c * C_m;
+	MM[3][3] = a * C_m;
+	MM[3][5] = b * C_m;
+	MM[3][7] = c * C_m;
+	MM[4][4] = a * C_m;
+	MM[4][6] = b * C_m;
+	MM[5][5] = a * C_m;
+	MM[5][7] = b * C_m;
+	MM[6][6] = a * C_m;
+	MM[7][7] = a * C_m;
+
+
+
+	//! Extend MM into 12*12 matrix
+	double M[12][12];
+	for (int i = 0; i < 12; i++) {
+		for (int j = 0; j < 12; j++) {
+			M[i][j] = 0.0;
+		}
+	}
+	int m1, m2;
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			int k1 = i / 2;
+			if (i % 2 == 0)
+				m1 = 0;
+			else
+				m1 = 1;
+			int k2 = j / 2;
+			if (j % 2 == 0)
+				m2 = 0;
+			else
+				m2 = 1;
+			M[3 * k1 + m1][3 * k2 + m2] = MM[i][j];
+
+		}
+	}
+
+	//! Store M into Matrix
+	int k = 0;
+	for (int i = 0; i < 12; i++) {
+		for (int j = i; j >= 0; j--) {
+			Matrix[k] = M[j][i];
+			k += 1;
+		}
+	}
+}
+
 //!	Calculate element stress
 void CQ4::ElementStress(double* stress, double* Displacement)
 {
@@ -282,7 +359,7 @@ void CQ4::STDM(CNode** nodes_, double B[][8], double Jac, double R, double S)
 			XJ[i][j] = dum;
 		}
 	}
-	det_J = XJ[0][0] * XJ[1][1] - XJ[1][0] * XJ[0][1];
+	det_J = abs( XJ[0][0] * XJ[1][1] - XJ[1][0] * XJ[0][1] );
 	if (det_J < 1e-7) {
 		cout << "*** Error *** Some element is singular";
 		exit(0);

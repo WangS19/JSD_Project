@@ -3,6 +3,9 @@
 /*     WangShuai                                                             */
 /*     2020/3/14                                                             */
 /*****************************************************************************/
+
+//未实现质量矩阵
+
 #pragma once
 
 #include "Element.h"
@@ -51,6 +54,9 @@ public:
 
 	//!	Calculate element stiffness matrix
 	virtual void ElementStiffness(double* Matrix);
+
+	//!	Calculate element mass matrix
+	virtual void ElementMass(double* Matrix);
 
 	//!	Calculate element stress
 	virtual void ElementStress(double* stress, double* Displacement);
