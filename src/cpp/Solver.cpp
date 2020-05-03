@@ -28,7 +28,9 @@ template <class type> void clear(type* a, unsigned int N)
 
 CSolver::CSolver(CSkylineMatrix<double>* K) : K(K) {};
 
-CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};	
+CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {
+};	
+
 
 // Calculate the lumped mass matrix
 void CSolver::Cal_LM()
@@ -398,9 +400,10 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
 
 		// Tecplot Output
-		if (fmod(Tec_Count, TecplotOut_Interval) == 0) {
-			cout << "Output Tecplot, Time =  " << t << endl;
+		if (fmod(Tec_Count, Ani_Interval) == 0) {
+			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
+			Paraview_Output->OutputVTK(t, dis);
 		}
 
 		Tec_Count += 1;

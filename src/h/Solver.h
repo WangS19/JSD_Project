@@ -121,7 +121,7 @@ class CG_alpha : public CSolver
 private:
 	//! spectral radius
 
-	double rho = 0.5;
+	double rho;
 
 	//! Damping coefficient *******
 	double C_alpha;
@@ -144,7 +144,7 @@ private:
 	double h;
 
 	//! The minimal quantity
-	const double eps = 1e-16;
+	double eps;
 
 	//!	List of all nodes in the domain
 	CNode* NodeList;
@@ -155,8 +155,11 @@ private:
 	//! Tecplot Output
 	COutputter* Tecplot_Output;
 
-	int TecplotOut_Interval = 20;
+	//! Paraview Output
+	COutputter* Paraview_Output;
 
+	//! The interval of animation output
+	int Ani_Interval;
 
 	//! History output which freedom
 	int N_His_Freedom;
@@ -166,7 +169,12 @@ public:
 
 	//! Constructor
 
-	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) {};
+	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) 
+	{
+		rho = 0.5;
+		Ani_Interval = 20;
+		eps = 1e-16;
+	};
 
 
 	//! Integration
@@ -193,6 +201,9 @@ public:
 
 	//! Obtain the Tecplot output file
 	void Obtain_TecOutput(COutputter* Tec_Output) { Tecplot_Output = Tec_Output; }
+
+	//! Obtain the Paraview output file
+	void Obtain_VTKOutput(COutputter* VTK_Output) { Paraview_Output = VTK_Output; }
 
 	//! Obtain the dynamics parameters
 	void Obtain_Dyn_Para(double* Dyn_Para) {

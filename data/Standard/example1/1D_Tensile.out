@@ -1,5 +1,5 @@
 TITLE : 1D Tensile with 5 elemets
-        (15:10:36 on April 17, 2020, Friday)
+        (17:52:20 on May 3, 2020, Sunday)
 
 C O N T R O L   I N F O R M A T I O N
 
@@ -69,6 +69,7 @@ C O N T R O L   I N F O R M A T I O N
  ELEMENT TYPE  . . . . . . . . . . . . .( NPAR(1) ) . . =    1
      EQ.1, TRUSS ELEMENTS
      EQ.2, Q4 ELEMENTS
+     EQ.8, AX8R ELEMENTS
      EQ.3, NOT AVAILABLE
 
  NUMBER OF ELEMENTS. . . . . . . . . . .( NPAR(2) ) . . =    5
@@ -93,15 +94,6 @@ C O N T R O L   I N F O R M A T I O N
     4          4        5           1
     5          5        6           1
 
-*** _Debug_ *** Column Heights
-       0       1       1       1       1
-
-*** _Debug_ *** Address of Diagonal Element
-       1       2       4       6       8      10
-
-*** _Debug_ *** Address of Diagonal Element
-       1       2       4       6       8      10
-
 	TOTAL SYSTEM DATA
 
      NUMBER OF EQUATIONS . . . . . . . . . . . . . .(NEQ) = 5
@@ -109,28 +101,6 @@ C O N T R O L   I N F O R M A T I O N
      MAXIMUM HALF BANDWIDTH  . . . . . . . . . . . .(MK ) = 2
      MEAN HALF BANDWIDTH . . . . . . . . . . . . . .(MM ) = 1
 
-
-*** _Debug_ *** Banded stiffness matrix
-   4.00000e+04   4.00000e+04  -2.00000e+04   4.00000e+04  -2.00000e+04   4.00000e+04
-  -2.00000e+04   2.00000e+04  -2.00000e+04
-
-*** _Debug_ *** Full stiffness matrix
-   4.00000e+04  -2.00000e+04   0.00000e+00   0.00000e+00   0.00000e+00
-  -2.00000e+04   4.00000e+04  -2.00000e+04   0.00000e+00   0.00000e+00
-   0.00000e+00  -2.00000e+04   4.00000e+04  -2.00000e+04   0.00000e+00
-   0.00000e+00   0.00000e+00  -2.00000e+04   4.00000e+04  -2.00000e+04
-   0.00000e+00   0.00000e+00   0.00000e+00  -2.00000e+04   2.00000e+04
-
-*** _Debug_ *** Banded mass matrix
-   6.66667e+02   6.66667e+02   1.66667e+02   6.66667e+02   1.66667e+02   6.66667e+02
-   1.66667e+02   3.33333e+02   1.66667e+02
-
-*** _Debug_ *** Full mass matrix
-   6.66667e+02   1.66667e+02   0.00000e+00   0.00000e+00   0.00000e+00
-   1.66667e+02   6.66667e+02   1.66667e+02   0.00000e+00   0.00000e+00
-   0.00000e+00   1.66667e+02   6.66667e+02   1.66667e+02   0.00000e+00
-   0.00000e+00   0.00000e+00   1.66667e+02   6.66667e+02   1.66667e+02
-   0.00000e+00   0.00000e+00   0.00000e+00   1.66667e+02   3.33333e+02
 
 S T A R T: D Y N A M I C S  A N A L Y S I S
 
@@ -143,8 +113,8 @@ S T A R T: D Y N A M I C S  A N A L Y S I S
 
  S O L U T I O N   T I M E   L O G   I N   S E C 
 
-     TIME FOR INPUT PHASE = 2.23000e-01
-     TIME FOR CALCULATION OF STIFFNESS MATRIX = 1.02000e-01
-     TIME FOR FACTORIZATION AND LOAD CASE SOLUTIONS = 7.12000e-01
+     TIME FOR INPUT PHASE = 1.66000e-01
+     TIME FOR CALCULATION OF STIFFNESS MATRIX = 1.60000e-02
+     TIME FOR FACTORIZATION AND LOAD CASE SOLUTIONS = 1.02600e+00
 
-     T O T A L   S O L U T I O N   T I M E = 1.03700e+00
+     T O T A L   S O L U T I O N   T I M E = 1.20800e+00

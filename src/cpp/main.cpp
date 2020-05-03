@@ -128,10 +128,8 @@ int main(int argc, char *argv[])
 //  Output the result in vtk form
 	vtk_Output->OutputVTK();
 
-    
-	//  Output the result in tecplot form
-	
-		Tec_Output->OutputTecplot(1);
+//  Output the result in tecplot form
+	Tec_Output->OutputTecplot(1);
 
 	}
 
@@ -175,6 +173,9 @@ int main(int argc, char *argv[])
 
 		// Tecplot Output
 		G_alpha_->Obtain_TecOutput(Tec_Output);
+
+		// Paraview Output
+		G_alpha_->Obtain_VTKOutput(vtk_Output);
 
 		for (unsigned int i = 0; i < FEMData->GetNLCASE(); i++)
 		{
