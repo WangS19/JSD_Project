@@ -762,6 +762,8 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 					for (int i = 0; i < NG * NG; i++) 
 						for (int j = 0; j < 3; j++)
 							averagestress[j] += stress[ 3 * i + j];
+					for (int i = 0; i < 3; i++)
+						averagestress[i] = averagestress[i]/NG/NG;
 
 					delete[] stress;
 				//output averagestress
@@ -777,14 +779,16 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 				for (unsigned int Ele = 0; Ele < NUME; Ele++)
 				{
 					CElement& Element = EleGrp[Ele];
-					double* stress = new double[NG * NG * 3];
+					double* stress = new double[NG * NG * 4];
 					Element.ElementStress(stress, dis);
 				 //averagestress
-					double averagestress[3]={0};
+					double averagestress[4]={0};
 
 					for (int i = 0; i < NG * NG; i++) 
-						for (int j = 0; j < 3; j++)
-							averagestress[j] += stress[ 3 * i + j];
+						for (int j = 0; j < 4; j++)
+							averagestress[j] += stress[ 4 * i + j];
+					for (int i = 0; i < 4; i++)
+						averagestress[i] = averagestress[i]/NG/NG;
 
 					delete[] stress;
 				//output averagestress
@@ -1020,6 +1024,9 @@ void COutputter::OutputVTKElemStress()
 						averagestress[j] += stress[3 * i + j];
 
 				delete[] stress;
+				for (int i = 0; i < 3; i++)
+					averagestress[i] = averagestress[i]/NG/NG;
+
 				//output averagestress
 				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
 				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
@@ -1033,14 +1040,16 @@ void COutputter::OutputVTKElemStress()
 			for (unsigned int Ele = 0; Ele < NUME; Ele++)
 			{
 				CElement& Element = EleGrp[Ele];
-				double* stress = new double[NG * NG * 3];
+				double* stress = new double[NG * NG * 4];
 				Element.ElementStress(stress, Displacement);
 				//averagestress
-				double averagestress[3] = { 0 };
+				double averagestress[4] = { 0 };
 
 				for (int i = 0; i < NG * NG; i++)
-					for (int j = 0; j < 3; j++)
-						averagestress[j] += stress[3 * i + j];
+					for (int j = 0; j < 4; j++)
+						averagestress[j] += stress[4 * i + j];
+				for (int i = 0; i < 4; i++)
+					averagestress[i] = averagestress[i]/NG/NG;
 
 				delete[] stress;
 				//output averagestress
