@@ -334,17 +334,17 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
 	//// ****for debug****
-	unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
-	cout << setiosflags(ios::scientific) << setprecision(5);
-	for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
-		cout << setw(14) << (*K_e)(i);
+	//unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
+	//cout << setiosflags(ios::scientific) << setprecision(5);
+	//for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
+	//	cout << setw(14) << (*K_e)(i);
 
-		if ((i + 1) % 6 == 0)
-		{
-			cout << endl;
-		}
-	}
-	cout << endl;
+	//	if ((i + 1) % 6 == 0)
+	//	{
+	//		cout << endl;
+	//	}
+	//}
+	//cout << endl;
 	
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
@@ -397,8 +397,11 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
 
 		// Tecplot Output
-		if (fmod(Tec_Count, TecplotOut_Interval) == 0)
+		if (fmod(Tec_Count, TecplotOut_Interval) == 0) {
+			cout << "Output Tecplot, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
+		}
+	
 		Tec_Count += 1;
 
 		// Store the motion messages of the last step

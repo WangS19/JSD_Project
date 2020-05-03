@@ -151,7 +151,7 @@ private:
 
 	//! Tecplot Output
 	COutputter* Tecplot_Output;
-	int TecplotOut_Interval = 5;
+	int TecplotOut_Interval = 20;
 
 	//! History output which freedom
 	int N_His_Freedom;

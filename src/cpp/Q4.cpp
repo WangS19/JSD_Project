@@ -359,7 +359,7 @@ void CQ4::STDM(CNode** nodes_, double B[][8], double Jac, double R, double S)
 			XJ[i][j] = dum;
 		}
 	}
-	det_J = XJ[0][0] * XJ[1][1] - XJ[1][0] * XJ[0][1];
+	det_J = abs( XJ[0][0] * XJ[1][1] - XJ[1][0] * XJ[0][1] );
 	if (det_J < 1e-7) {
 		cout << "*** Error *** Some element is singular";
 		exit(0);
