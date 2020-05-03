@@ -41,7 +41,11 @@ int main(int argc, char *argv[])
     string InFile = filename + ".dat";
 	string OutFile = filename + ".out";
 	string TecFile = filename + "_tec.dat";
+
+	string vtkFile = filename + ".vtk";
+
 	string HisFile = filename + ".his";
+
 
 	CDomain* FEMData = CDomain::Instance();
 
@@ -58,6 +62,12 @@ int main(int argc, char *argv[])
 //  Output the result in tecplot form at the beginning including the head
 	COutputter* Tec_Output = COutputter::Tec_Instance(TecFile);
 	Tec_Output->OutputTecplot(0);
+
+//  Output head,nodes and elements information to vtkfile
+	COutputter* vtk_Output = COutputter::vtk_Instance(vtkFile);
+	vtk_Output->OutputVTKHead();
+	vtk_Output->OutputVTKNodes();
+	vtk_Output->OutputVTKElements();
     
     double time_input = timer.ElapsedTime();
 
@@ -111,8 +121,13 @@ int main(int argc, char *argv[])
 
 		time_solution = timer.ElapsedTime();
 
-	//  Calculate and output stresses of all elements
-		Output->OutputElementStress();
+
+//  Calculate and output stresses of all elements
+	Output->OutputElementStress();
+
+//  Output the result in vtk form
+	vtk_Output->OutputVTK();
+
     
 	//  Output the result in tecplot form
 	
