@@ -24,7 +24,7 @@ private:
 	ofstream OutputFile;
 
 //! Enlarge the dis by a scale
-	double Dis_scale = 100.0;
+	double Dis_scale;
 
 
 protected:
