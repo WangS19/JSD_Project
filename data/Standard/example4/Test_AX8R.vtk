@@ -29,3 +29,7 @@ VECTORS DISPLACEMENT double
 
 CELL_DATA        1
 TENSORS Element_Stress double
+2.088284e-02 -3.542878e-02        0
+-3.542878e-02 1.290009e-01        0
+       0        0 9.353996e-03
+

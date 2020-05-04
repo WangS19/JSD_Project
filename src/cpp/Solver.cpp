@@ -28,8 +28,7 @@ template <class type> void clear(type* a, unsigned int N)
 
 CSolver::CSolver(CSkylineMatrix<double>* K) : K(K) {};
 
-CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {
-};	
+CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};	
 
 
 // Calculate the lumped mass matrix

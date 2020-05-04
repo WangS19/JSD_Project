@@ -1,5 +1,5 @@
 TITLE : problem CAX8R
-        (17:54:6 on May 3, 2020, Sunday)
+        (22:7:44 on May 4, 2020, Monday)
 
 C O N T R O L   I N F O R M A T I O N
 
@@ -114,3 +114,11 @@ Stress on  Point    3
 Stress on  Point    4
         -9.52349e-03         6.29688e-02        -2.40963e-02         1.68498e-02
 
+
+ S O L U T I O N   T I M E   L O G   I N   S E C 
+
+     TIME FOR INPUT PHASE = 1.59000e-01
+     TIME FOR CALCULATION OF STIFFNESS MATRIX = 1.60000e-02
+     TIME FOR FACTORIZATION AND LOAD CASE SOLUTIONS = 3.20000e-02
+
+     T O T A L   S O L U T I O N   T I M E = 2.34000e-01
