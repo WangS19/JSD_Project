@@ -55,7 +55,7 @@ bool CQ4Material::Read(ifstream& Input, unsigned int mset)
 		return false;
 	}
 
-	Input >> E >> miu >> t >> ss;	// Young's modulus and Poisson ratio and thickness and ss(0-plane strain;1-plane stress)
+	Input >> E >> miu >> rho >> t >> ss;	// Young's modulus and Poisson ratio and thickness and ss(0-plane strain;1-plane stress)
 
 	return true;
 }

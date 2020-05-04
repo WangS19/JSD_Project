@@ -24,7 +24,8 @@ private:
 	ofstream OutputFile;
 
 //! Enlarge the dis by a scale
-	double Dis_scale ;//= 100.0;
+	double Dis_scale; //= 100.0;
+
 
 protected:
 
@@ -35,8 +36,13 @@ protected:
 	static COutputter* _instance;
 //! Another instance class for tecplot
 	static COutputter* tec_instance;
+
+//! Another instance class for VTK
+	static COutputter* vtk_instance;
+
 //! Another instance class for history message
 	static COutputter* his_instance;
+
 
 public:
 
@@ -47,8 +53,12 @@ public:
 	static COutputter* Instance(string FileName = " ");
 //! Return the tecplot instance of the class
 	static COutputter* Tec_Instance(string FileName = " ");
+
+	static COutputter* vtk_Instance(string FileName = " ");
+
 //! Return the history instance of the class
 	static COutputter* His_Instance(string FileName = " ");
+
 
 //!	Output current time and date
 	void PrintTime(const struct tm * ptm, COutputter& output);
@@ -88,6 +98,30 @@ public:
 
 //! Output into tecplot (for stastic and modal analysis)
 	void OutputTecplot(int step);
+
+
+//! Output into vtk files for paraview
+	void OutputVTK();
+
+//! Output head into vtk files
+	void OutputVTKHead();
+
+//! Output node information into vtk files
+	void OutputVTKNodes();
+
+//! Output element information into vtk files
+	void OutputVTKElements();
+
+//! Output nodal displacement into vtk files
+	void OutputVTKNodalDis();
+
+//! Output element stress and force into vtk files
+	void OutputVTKElemStress();
+
+//! Overload OututVTK()&Nodaldis&ElemStress for dynamic problem
+	void OutputVTK(double time,double* dis);
+	void OutputVTKNodalDis(double time, double* dis);
+	void OutputVTKElemStress(double time, double* dis);
 
 //! Overload: Output into tecplot (for dynamics analysis)
 	void OutputTecplot(double time, double* dis);
