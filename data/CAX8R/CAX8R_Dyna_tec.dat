@@ -1,4 +1,4 @@
-TITLE = "problem CAX8R"
+TITLE = "CAX8R element in dynamic analysis"
 VARIABLES =    "X"   "Y"   "Z" "DIS"
 
       0.0000      0.0000      0.0000      0.0000
