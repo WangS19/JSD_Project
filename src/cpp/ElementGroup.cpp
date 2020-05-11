@@ -140,6 +140,34 @@ void CElementGroup::AllocateMaterials(std::size_t size)
             exit(5);
     }
 }
+//! Read element group data from stream Input(inp)
+bool CElementGroup :: ReadInp(ifstream& Input, string etype,unsigned int NUME, streampos pMaterial, unsigned int m_set , unsigned int ** Elements)
+{
+	NUMMAT_ = 1;
+	NUME_ = NUME;
+	if ( !stricmp(etype.c_str() , "T2D2") )
+		(int&)ElementType_ = 1;//BAR
+	else if (!stricmp(etype.c_str() , "CPE4") )
+	{
+		(int&)ElementType_ = 2;//Q4
+		N_G = 2;
+	}
+	else if (!stricmp(etype.c_str() , "CAX8R") )
+	{
+		(int&)ElementType_ = 8;//AX8R
+		N_G = 2;
+	}
+	else
+	{
+		cerr << "*** ERROR *** This Element Type Is Not Supported Yet!" << endl;
+	}
+	CalculateMemberSize();
+
+    if (!ReadInpElementData(Input, pMaterial, m_set, Elements))
+        return false;
+
+	return true;
+}
 
 //! Read element group data from stream Input
 bool CElementGroup::Read(ifstream& Input)
@@ -160,6 +188,27 @@ bool CElementGroup::Read(ifstream& Input)
         return false;
 
     return true;
+}
+
+bool CElementGroup::ReadInpElementData(ifstream& Input, streampos pMaterial, unsigned int m_set , unsigned int ** Elements)
+{
+	//  Read material/section property lines
+    AllocateMaterials(NUMMAT_);
+    for (unsigned int mset = 0; mset < NUMMAT_; mset++)
+        if (!GetMaterial(mset).ReadInp(Input, mset, pMaterial))
+            return false;
+	//  Read element data lines
+    AllocateElements(NUME_);
+
+	//  Get the number of Gauss point in one direction
+	ElementList_->GetNG(N_G);
+
+	//  Loop over for all elements in this element group
+    for (unsigned int Ele = 0; Ele < NUME_; Ele++)
+        if (!(*this)[Ele].ReadInp(Input, Ele, MaterialList_, NodeList_, m_set, Elements))
+            return false;
+
+	return true;
 }
 
 //  Read bar element data from the input data file

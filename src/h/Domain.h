@@ -104,14 +104,38 @@ public:
 //!	Read domain data from the input data file
 	bool ReadData(string FileName, string OutFile);
 
+//! Read domain data from the inp data file
+	bool ReadInpData(string FileName,string OutFile);
+
+//! Return the place of the first "code" from start streampos	
+	streampos seek(string code, streampos start,int *flag);
+
+//! Return the place of selected set information, target for target set, set for the type of set(*Nset or *Elset
+	streampos seekset(string target, string set);
+
+//! Search between start and end, count the time that "code" appears
+	int countcode(string code, streampos start, streampos end);
+
+//!	Read nodal point data
+	bool ReadInpNodalPoints();
+
 //!	Read nodal point data
 	bool ReadNodalPoints();
+
+//!	Read load case data
+	bool ReadInpLoadCases();
 
 //!	Read load case data
 	bool ReadLoadCases();
 
 //!	Read element data
+	bool ReadInpElements();
+	
+//!	Read element data
 	bool ReadElements();
+
+//!	Read history output message
+	bool ReadInpHisMessage();
 
 //!	Read history output message
 	bool ReadHisMessage();
