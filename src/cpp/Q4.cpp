@@ -30,7 +30,15 @@ CQ4::CQ4()
 CQ4::~CQ4()
 {
 }
-
+bool CQ4::ReadInp(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList, unsigned int m_set , unsigned int ** Elements)
+{
+	ElementMaterial_ = dynamic_cast<CQ4Material*>(MaterialSets) + m_set - 1;
+	nodes_[0] = &NodeList[Elements[Ele][0] - 1];
+	nodes_[1] = &NodeList[Elements[Ele][1] - 1];
+	nodes_[2] = &NodeList[Elements[Ele][2] - 1];
+	nodes_[3] = &NodeList[Elements[Ele][3] - 1];
+	return true;
+}
 //!	Read element data from stream Input
 bool CQ4::Read(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList)
 {
@@ -162,6 +170,7 @@ void CQ4::ElementStiffness(double* Matrix)
 //!	Calculate element mass matrix
 void CQ4::ElementMass(double* Matrix)
 {
+
 	int n = SizeOfStiffnessMatrix();
 	clear(Matrix, n);
 
@@ -234,6 +243,7 @@ void CQ4::ElementMass(double* Matrix)
 			k += 1;
 		}
 	}
+
 }
 
 //!	Calculate element stress

@@ -10,6 +10,26 @@
 
 #include "ElementGroup.h"
 #include "Domain.h"
+#include "Element.h"//yjl
+//yjl
+CElement::CElement() 
+{
+	NEN_ = 0;
+	nodes_ = nullptr;
+	ElementMaterial_ = nullptr;
+	det_J = 0;
+	XG[0][0] = 0;   XG[0][1] = -0.5773502691896;   XG[0][2] = -0.7745966692415;  XG[0][3] = -0.8611363115941;
+	XG[1][0] = 0; 	XG[1][1] = 0.5773502691896;    XG[1][2] = 0;  				 XG[1][3] = -.3399810435849;
+	XG[2][0] = 0; 	XG[2][1] = 0; 				   XG[2][2] = 0.7745966692415;   XG[2][3] = 0.3399810435849;
+	XG[3][0] = 0; 	XG[3][1] = 0; 				   XG[3][2] = 0;  				 XG[3][3] = 0.8611363115941;
+	WGT[0][0] = 2;  WGT[0][1] = 1;                 WGT[0][2] = 0.5555555555556;  WGT[0][3] = 0.3478548451375;
+	WGT[1][0] = 0; 	WGT[1][1] = 1.0; 			   WGT[1][2] = 0.8888888888889;  WGT[1][3] = 0.6521451548625;
+	WGT[2][0] = 0; 	WGT[2][1] = 0; 				   WGT[2][2] = 0.5555555555556;  WGT[2][3] = 0.6521451548625;
+	WGT[3][0] = 0; 	WGT[3][1] = 0; 				   WGT[3][2] = 0;  				 WGT[3][3] = 0.3478548451375;
+}
+
+
+
 
 CNode* CElementGroup::NodeList_ = nullptr;
 
@@ -70,6 +90,10 @@ void CElementGroup::CalculateMemberSize()
 			ElementSize_ = sizeof(CQ4);
 			MaterialSize_ = sizeof(CQ4Material);
 			break;
+		case ElementTypes::AX8R:
+			ElementSize_ = sizeof(CAX8R);
+			MaterialSize_ = sizeof(CAX8RMaterial);
+			break;//yjl
         default:
             std::cerr << "Type " << ElementType_ << " not available. See CElementGroup::CalculateMemberSize." << std::endl;
             exit(5);
@@ -88,6 +112,9 @@ void CElementGroup::AllocateElements(std::size_t size)
 		case ElementTypes::Q4:
 			ElementList_ = new CQ4[size];
 			break;
+		case ElementTypes::AX8R:
+			ElementList_ = new CAX8R[size];
+			break;
         default:
             std::cerr << "Type " << ElementType_ << " not available. See CElementGroup::AllocateElement." << std::endl;
             exit(5);
@@ -105,10 +132,41 @@ void CElementGroup::AllocateMaterials(std::size_t size)
 		case ElementTypes::Q4:
 			MaterialList_ = new CQ4Material[size];
 			break;
+		case ElementTypes::AX8R://yjl
+			MaterialList_ = new CAX8RMaterial[size];
+			break;
         default:
             std::cerr << "Type " << ElementType_ << " not available. See CElementGroup::AllocateMaterial." << std::endl;
             exit(5);
     }
+}
+//! Read element group data from stream Input(inp)
+bool CElementGroup :: ReadInp(ifstream& Input, string etype,unsigned int NUME, streampos pMaterial, unsigned int m_set , unsigned int ** Elements)
+{
+	NUMMAT_ = 1;
+	NUME_ = NUME;
+	if ( !stricmp(etype.c_str() , "T2D2") )
+		(int&)ElementType_ = 1;//BAR
+	else if (!stricmp(etype.c_str() , "CPE4") )
+	{
+		(int&)ElementType_ = 2;//Q4
+		N_G = 2;
+	}
+	else if (!stricmp(etype.c_str() , "CAX8R") )
+	{
+		(int&)ElementType_ = 8;//AX8R
+		N_G = 2;
+	}
+	else
+	{
+		cerr << "*** ERROR *** This Element Type Is Not Supported Yet!" << endl;
+	}
+	CalculateMemberSize();
+
+    if (!ReadInpElementData(Input, pMaterial, m_set, Elements))
+        return false;
+
+	return true;
 }
 
 //! Read element group data from stream Input
@@ -119,6 +177,10 @@ bool CElementGroup::Read(ifstream& Input)
 	if (ElementType_ == 2) {
 		Input >> N_G;   //Input the number of Gauss point in one direction
 	}
+	//yjl for CAX8R
+	if (ElementType_ == 8) {
+		Input >> N_G;   //Input the number of Gauss point in one direction
+	}
     
     CalculateMemberSize();
 
@@ -126,6 +188,27 @@ bool CElementGroup::Read(ifstream& Input)
         return false;
 
     return true;
+}
+
+bool CElementGroup::ReadInpElementData(ifstream& Input, streampos pMaterial, unsigned int m_set , unsigned int ** Elements)
+{
+	//  Read material/section property lines
+    AllocateMaterials(NUMMAT_);
+    for (unsigned int mset = 0; mset < NUMMAT_; mset++)
+        if (!GetMaterial(mset).ReadInp(Input, mset, pMaterial))
+            return false;
+	//  Read element data lines
+    AllocateElements(NUME_);
+
+	//  Get the number of Gauss point in one direction
+	ElementList_->GetNG(N_G);
+
+	//  Loop over for all elements in this element group
+    for (unsigned int Ele = 0; Ele < NUME_; Ele++)
+        if (!(*this)[Ele].ReadInp(Input, Ele, MaterialList_, NodeList_, m_set, Elements))
+            return false;
+
+	return true;
 }
 
 //  Read bar element data from the input data file

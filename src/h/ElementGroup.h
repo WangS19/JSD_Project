@@ -17,7 +17,7 @@
 #include "Q4.h"
 #include "Material.h"
 #include "Node.h"
-
+#include "CAX8R.h"//yjl
 using namespace std;
 
 //! Define set of element types
@@ -30,7 +30,8 @@ enum ElementTypes
     H8,     // 8H element
     Beam,   // Beam element
     Plate,  // Plate element
-    Shell   // Shell elment
+    Shell,  // Shell elment
+	AX8R    //AX8R element yjl
 };
 
 //! Element group class
@@ -74,6 +75,9 @@ public:
     //! Read element group data from stream Input
     bool Read(ifstream& Input);
 
+	//! Read element group data from stream Input(inp)
+	bool ReadInp(ifstream& Input, string etype, unsigned int NUME, streampos pMaterial, unsigned int m_set, unsigned int ** Elements);
+
     //! Calculate the size of the derived element class and material class
     void CalculateMemberSize();
 
@@ -82,6 +86,9 @@ public:
 
     //! Allocate array of derived materials
     void AllocateMaterials(std::size_t size);
+
+    //! Read element data from the input data file
+    bool ReadInpElementData(ifstream& Input, streampos pMaterial, unsigned int m_set , unsigned int ** Elements);
 
     //! Read element data from the input data file
     bool ReadElementData(ifstream& Input);

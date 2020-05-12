@@ -39,18 +39,19 @@ protected:
     unsigned int ND_;
 
 //£¡The Gauss points and Gauss weight functions
-	double XG[4][4] = { { 0, -0.5773502691896, -0.7745966692415, -0.8611363115941 },{ 0, 0.5773502691896, 0, -.3399810435849 },{ 0, 0, 0.7745966692415, 0.3399810435849 },{ 0, 0, 0, 0.8611363115941 } };
-	double WGT[4][4] = { { 2.0, 1.0, 0.5555555555556, 0.3478548451375 },{ 0, 1.0, 0.8888888888889, 0.6521451548625 },{ 0, 0, 0.5555555555556, 0.6521451548625 },{ 0, 0, 0, 0.3478548451375 } };
+	double XG[4][4];
+	double WGT[4][4];
 
 //! The Jaccobi matrix
-	double det_J = 0;
+	double det_J;
 
 
 public:
 
 
 //!	Constructor
-	CElement() : NEN_(0), nodes_(nullptr), ElementMaterial_(nullptr) {};
+	CElement(); 
+
 
 //! Virtual deconstructor
     virtual ~CElement() {
@@ -66,7 +67,7 @@ public:
 
 //!	Read element data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList) = 0;
-
+	virtual bool ReadInp(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList, unsigned int m_set , unsigned int ** Elements) = 0;
 //!	Write element data to stream
 	virtual void Write(COutputter& output, unsigned int Ele) = 0;
 

@@ -24,7 +24,8 @@ private:
 	ofstream OutputFile;
 
 //! Enlarge the dis by a scale
-	double Dis_scale = 100.0;
+	double Dis_scale;
+
 
 protected:
 
@@ -79,6 +80,9 @@ public:
 
 //!	Output Q4 element data
 	void PrintQ4ElementData(unsigned int EleGrp);
+
+//!	Output CAX8R element data
+	void PrintAX8RElementData(unsigned int EleGrp);//yjl
 
 //!	Output load data 
 	void OutputLoadInfo(); 

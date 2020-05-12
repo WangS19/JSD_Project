@@ -45,7 +45,7 @@ COutputter* COutputter::his_instance = nullptr;
 COutputter::COutputter(string FileName)
 {
 	OutputFile.open(FileName);
-
+	Dis_scale = 100.0;
 	if (!OutputFile)
 	{
 		cerr << "*** Error *** File " << FileName << " does not exist !" << endl;
@@ -70,9 +70,10 @@ COutputter* COutputter::Tec_Instance(string FileName)
 
 COutputter* COutputter::vtk_Instance(string FileName)
 {
-	if(!vtk_instance)
+	if (!vtk_instance)
 		vtk_instance = new COutputter(FileName);
 	return vtk_instance;
+}
 
 //! Return the his instance of the class
 COutputter* COutputter::His_Instance(string FileName)
@@ -179,6 +180,7 @@ void COutputter::OutputElementInfo()
 			  << ElementType << endl;
 		*this << "     EQ.1, TRUSS ELEMENTS" << endl
 			  << "     EQ.2, Q4 ELEMENTS" << endl
+			  << "     EQ.8, AX8R ELEMENTS" << endl//yjl
 			  << "     EQ.3, NOT AVAILABLE" << endl
 			  << endl;
 
@@ -193,6 +195,9 @@ void COutputter::OutputElementInfo()
 				break;
 			case ElementTypes::Q4: // Bar element
 				PrintQ4ElementData(EleGrp);
+				break;
+			case ElementTypes::AX8R: // AX8R element yjl
+				PrintAX8RElementData(EleGrp);
 				break;
 		}
 	}
@@ -276,7 +281,44 @@ void COutputter::PrintQ4ElementData(unsigned int EleGrp)
 
 	*this << endl;
 }
+void COutputter::PrintAX8RElementData(unsigned int EleGrp) //yjl
+{
+	CDomain* FEMData = CDomain::Instance();
 
+	CElementGroup& ElementGroup = FEMData->GetEleGrpList()[EleGrp];
+	unsigned int NUMMAT = ElementGroup.GetNUMMAT();
+
+	*this << " M A T E R I A L   D E F I N I T I O N" << endl
+		<< endl;
+	*this << " NUMBER OF DIFFERENT SETS OF MATERIAL" << endl;
+	*this << " AND CROSS-SECTIONAL  CONSTANTS  . . . .( NPAR(3) ) . . =" << setw(5) << NUMMAT
+		<< endl
+		<< endl;
+
+	*this << "  SET       YOUNG'S     POISSON'S        DENSITY" << endl
+		  << " NUMBER     MODULUS       RATIO                    " << endl
+		  << "               E            v              rou     " << endl;
+
+	*this << setiosflags(ios::scientific) << setprecision(5);
+
+	//	Loop over for all property sets
+	for (unsigned int mset = 0; mset < NUMMAT; mset++)
+		ElementGroup.GetMaterial(mset).Write(*this, mset);
+
+	*this << endl
+		<< endl
+		<< " E L E M E N T   I N F O R M A T I O N" << endl;
+	*this << " ELEMENT     NODE     NODE     NODE     NODE     NODE     NODE     NODE     NODE       MATERIAL" << endl
+		  << " NUMBER-N      I        J        K        L        M        N        O        P       SET NUMBER" << endl;
+
+	unsigned int NUME = ElementGroup.GetNUME();
+
+	//	Loop over for all elements in group EleGrp
+	for (unsigned int Ele = 0; Ele < NUME; Ele++)
+		ElementGroup[Ele].Write(*this, Ele);
+
+	*this << endl;
+}
 //	Print load data
 void COutputter::OutputLoadInfo()
 {
@@ -389,6 +431,31 @@ void COutputter::OutputElementStress()
 
 
 
+
+				*this << endl;
+
+				break;
+
+		   case ElementTypes::AX8R: // AX8R element yjl
+				
+				for (unsigned int Ele = 0; Ele < NUME; Ele++)
+				{
+					CElement& Element = EleGrp[Ele];
+					double* stress = new double[NG * NG * 4];
+					*this << "Element Number" << setw(5) << Ele + 1 << endl;
+					//OutputFile << "Element Number" << setw(5) << Ele + 1 << endl;
+					Element.ElementStress(stress, Displacement);
+					*this << "Stress on GAUSS Points" << endl;
+					//OutputFile << "Stress on GAUSS Points" << endl;
+					for (int i = 0; i < NG * NG; i++) {
+						*this << "Stress on  Point" << setw(5) << i + 1 << endl;
+
+						*this << setw(20) << stress[4 * i + 0] << setw(20) << stress[4 * i + 1] 
+							  << setw(20) << stress[4 * i + 2] << setw(20) << stress[4 * i + 3] << endl;
+
+					}
+					delete[] stress;
+				}
 
 				*this << endl;
 
@@ -695,6 +762,8 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 					for (int i = 0; i < NG * NG; i++) 
 						for (int j = 0; j < 3; j++)
 							averagestress[j] += stress[ 3 * i + j];
+					for (int i = 0; i < 3; i++)
+						averagestress[i] = averagestress[i]/NG/NG;
 
 					delete[] stress;
 				//output averagestress
@@ -706,28 +775,30 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 				}
 				break;
 
-//			case ElementTypes::newelement:// new element
-//				for (unsigned int Ele = 0; Ele < NUME; Ele++)
-//				{
-//					CElement& Element = EleGrp[Ele];
-//					double* stress = new double[NG * NG * 3];
-//					Element.ElementStress(stress, dis);
-				// averagestress
-//					double averagestress[3]={0};
+			case ElementTypes::AX8R:// new element
+				for (unsigned int Ele = 0; Ele < NUME; Ele++)
+				{
+					CElement& Element = EleGrp[Ele];
+					double* stress = new double[NG * NG * 4];
+					Element.ElementStress(stress, dis);
+				 //averagestress
+					double averagestress[4]={0};
 
-//					for (int i = 0; i < NG * NG; i++) 
-//						for (int j = 0; j < 3; j++)
-//							averagestress[j] += stress[ 3 * i + j];
+					for (int i = 0; i < NG * NG; i++) 
+						for (int j = 0; j < 4; j++)
+							averagestress[j] += stress[ 4 * i + j];
+					for (int i = 0; i < 4; i++)
+						averagestress[i] = averagestress[i]/NG/NG;
 
-//					delete[] stress;
+					delete[] stress;
 				//output averagestress
-//					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-//					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
-//					OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
-//					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
-//					OutputFile << endl;
-//				}
-//				break;
+					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
+					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[3] << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << averagestress[3] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << averagestress[2] << endl;
+					OutputFile << endl;
+				}
+				break;
 		}
 	}
 
@@ -780,10 +851,10 @@ void COutputter::OutputVTKElements()
 				ElemInfo[EleGrp][0] = 9;
 				nlist += 5*NUME;
 				break;
-//			case ElementTypes::NewType // NewType 
-//				ElemInfo[EleGrp][0] = 23;
-//				nlist += 9*NUME;
-//				break;
+			case ElementTypes::AX8R: // NewType 
+				ElemInfo[EleGrp][0] = 23;
+				nlist += 9*NUME;
+				break;
 		}
 	}
 	OutputFile << "CELLS" << setw(8) << NUMEALL << setw(8) << nlist << endl;
@@ -866,10 +937,10 @@ void COutputter::OutputVTKElemStress()
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
 	{
 		CElementGroup& EleGrp = FEMData->GetEleGrpList()[EleGrpIndex];
-		NUMEALL +=EleGrp.GetNUME();
+		NUMEALL += EleGrp.GetNUME();
 	}
 	//Output Elemstress Head Info
-	if( (NUMEG!=1) || !(ElementTypes::Bar-1))
+	if ((NUMEG != 1) || !(ElementTypes::Bar - 1))
 	{
 		OutputFile << "CELL_DATA " << setw(8) << NUMEALL << endl;
 		//Tensor
@@ -882,110 +953,118 @@ void COutputter::OutputVTKElemStress()
 		unsigned int NUME = EleGrp.GetNUME();
 		ElementTypes ElementType = EleGrp.GetElementType();
 		unsigned int NG = EleGrp.GetNG();
-	
+
 		switch (ElementType)
 		{
-			case ElementTypes::Bar: // Bar element
-				if( NUMEG == 1)
-				{
-// new stress matrix, number of elments*2,column[0] for stress and column[1] for force
-					double** stress = new double*[NUME];
-					for (int i = 0; i < NUME; i++)
-						stress[i] = new double [2];	
-
-					for (unsigned int Ele = 0; Ele < NUME; Ele++)
-					{
-						CElement& Element = EleGrp[Ele];
-						Element.ElementStress(&stress[Ele][0], Displacement);
-						CBarMaterial& material = *dynamic_cast<CBarMaterial*>(Element.GetElementMaterial());
-						stress[Ele][1] = stress[Ele][0] * material.Area;
-					}
-				
-					// Output element stress
-					OutputFile << "CELL_DATA " << setw(8) << NUME << endl;
-					OutputFile << "SCALARS " << "Stress " << "double " << "1" << endl;
-					OutputFile << "LOOKUP_TABLE " << "Element_Stress" << endl;
-					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-					for (int i = 0; i < NUME; i++)
-						OutputFile << setw(8) << stress[i][0] << endl;
-					OutputFile << endl;
-
-					// Output element force
-					OutputFile << "SCALARS " << "Force " << "double " << "1" << endl;
-					OutputFile << "LOOKUP_TABLE " << "Element_Force" << endl;
-					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-					for (int i = 0; i < NUME; i++)
-						OutputFile << setw(8) << stress[i][1] << endl;
-					OutputFile << endl;
-				//delete stress
+		case ElementTypes::Bar: // Bar element
+			if (NUMEG == 1)
+			{
+				// new stress matrix, number of elments*2,column[0] for stress and column[1] for force
+				double** stress = new double*[NUME];
 				for (int i = 0; i < NUME; i++)
-					delete []stress[i];
-				delete []stress;
-				}
-				else
-				{
-					double stress;
-					for (unsigned int Ele = 0; Ele < NUME; Ele++)
-					{
-						CElement& Element = EleGrp[Ele];
-						Element.ElementStress(&stress, Displacement);
-						OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-						OutputFile << setw(8) << stress << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
-						OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
-						OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
-						OutputFile << endl;
-					}
-				}
-				break;
-
-			case ElementTypes::Q4: // Q4 element
+					stress[i] = new double[2];
 
 				for (unsigned int Ele = 0; Ele < NUME; Ele++)
 				{
 					CElement& Element = EleGrp[Ele];
-					double* stress = new double[NG * NG * 3];
-					Element.ElementStress(stress, Displacement);
-				// averagestress
-					double averagestress[3]={0};
+					Element.ElementStress(&stress[Ele][0], Displacement);
+					CBarMaterial& material = *dynamic_cast<CBarMaterial*>(Element.GetElementMaterial());
+					stress[Ele][1] = stress[Ele][0] * material.Area;
+				}
 
-					for (int i = 0; i < NG * NG; i++) 
-						for (int j = 0; j < 3; j++)
-							averagestress[j] += stress[ 3 * i + j];
+				// Output element stress
+				OutputFile << "CELL_DATA " << setw(8) << NUME << endl;
+				OutputFile << "SCALARS " << "Stress " << "double " << "1" << endl;
+				OutputFile << "LOOKUP_TABLE " << "Element_Stress" << endl;
+				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
+				for (int i = 0; i < NUME; i++)
+					OutputFile << setw(8) << stress[i][0] << endl;
+				OutputFile << endl;
 
-					delete[] stress;
-				//output averagestress
+				// Output element force
+				OutputFile << "SCALARS " << "Force " << "double " << "1" << endl;
+				OutputFile << "LOOKUP_TABLE " << "Element_Force" << endl;
+				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
+				for (int i = 0; i < NUME; i++)
+					OutputFile << setw(8) << stress[i][1] << endl;
+				OutputFile << endl;
+				//delete stress
+				for (int i = 0; i < NUME; i++)
+					delete[]stress[i];
+				delete[]stress;
+			}
+			else
+			{
+				double stress;
+				for (unsigned int Ele = 0; Ele < NUME; Ele++)
+				{
+					CElement& Element = EleGrp[Ele];
+					Element.ElementStress(&stress, Displacement);
 					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
-					OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << stress << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
+					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
 					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
 					OutputFile << endl;
 				}
-				break;
+			}
+			break;
 
-//			case ElementTypes::newelement:// new element
-//				for (unsigned int Ele = 0; Ele < NUME; Ele++)
-//				{
-//					CElement& Element = EleGrp[Ele];
-//					double* stress = new double[NG * NG * 3];
-//					Element.ElementStress(stress, Displacement);
+		case ElementTypes::Q4: // Q4 element
+
+			for (unsigned int Ele = 0; Ele < NUME; Ele++)
+			{
+				CElement& Element = EleGrp[Ele];
+				double* stress = new double[NG * NG * 3];
+				Element.ElementStress(stress, Displacement);
 				// averagestress
-//					double averagestress[3]={0};
+				double averagestress[3] = { 0 };
 
-//					for (int i = 0; i < NG * NG; i++) 
-//						for (int j = 0; j < 3; j++)
-//							averagestress[j] += stress[ 3 * i + j];
+				for (int i = 0; i < NG * NG; i++)
+					for (int j = 0; j < 3; j++)
+						averagestress[j] += stress[3 * i + j];
 
-//					delete[] stress;
+				delete[] stress;
+				for (int i = 0; i < 3; i++)
+					averagestress[i] = averagestress[i]/NG/NG;
+
+				CQ4Material* material_ = dynamic_cast<CQ4Material*>(Element.GetElementMaterial());
+
 				//output averagestress
-//					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
-//					OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
-//					OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
-//					OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
-//					OutputFile << endl;
-//				}
-//				break;
+				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
+				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << ( averagestress[0] + averagestress[1] ) * material_->miu << endl;
+				OutputFile << endl;
+			}
+			break;
+
+		case ElementTypes::AX8R:// new element
+			for (unsigned int Ele = 0; Ele < NUME; Ele++)
+			{
+				CElement& Element = EleGrp[Ele];
+				double* stress = new double[NG * NG * 4];
+				Element.ElementStress(stress, Displacement);
+				//averagestress
+				double averagestress[4] = { 0 };
+
+				for (int i = 0; i < NG * NG; i++)
+					for (int j = 0; j < 4; j++)
+						averagestress[j] += stress[4 * i + j];
+				for (int i = 0; i < 4; i++)
+					averagestress[i] = averagestress[i]/NG/NG;
+
+				delete[] stress;
+				//output averagestress
+				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
+				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[3] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << averagestress[3] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << averagestress[2] << endl;
+				OutputFile << endl;
+			}
+			break;
 		}
 	}
+}
 
 
 

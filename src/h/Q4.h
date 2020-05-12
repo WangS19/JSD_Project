@@ -4,7 +4,6 @@
 /*     2020/3/14                                                             */
 /*****************************************************************************/
 
-//未实现质量矩阵
 
 #pragma once
 
@@ -44,6 +43,7 @@ public:
 
 	//!	Read element data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList);
+	virtual bool ReadInp(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList, unsigned int m_set , unsigned int ** Elements);
 
 	//!	Write element data to stream
 	virtual void Write(COutputter& output, unsigned int Ele);

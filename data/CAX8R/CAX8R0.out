@@ -1,0 +1,122 @@
+TITLE : problem CAX8R
+        (17:2:27 on April 14, 2020, Tuesday)
+
+C O N T R O L   I N F O R M A T I O N
+
+      NUMBER OF NODAL POINTS . . . . . . . . . . (NUMNP)  =     8
+      NUMBER OF ELEMENT GROUPS . . . . . . . . . (NUMEG)  =     1
+      NUMBER OF LOAD CASES . . . . . . . . . . . (NLCASE) =     1
+      SOLUTION MODE  . . . . . . . . . . . . . . (MODEX)  =     1
+         EQ.0, DATA CHECK
+         EQ.1, EXECUTION
+
+ N O D A L   P O I N T   D A T A
+
+    NODE       BOUNDARY                         NODAL POINT
+   NUMBER  CONDITION  CODES                     COORDINATES
+        1    1    1    1      0.00000e+000   0.00000e+000   0.00000e+000
+        2    1    1    1      1.00000e+002   0.00000e+000   0.00000e+000
+        3    0    0    1      1.00000e+002   1.00000e+002   0.00000e+000
+        4    0    0    1      0.00000e+000   1.00000e+002   0.00000e+000
+        5    1    1    1      5.00000e+001   0.00000e+000   0.00000e+000
+        6    0    0    1      1.00000e+002   5.00000e+001   0.00000e+000
+        7    0    0    1      5.00000e+001   1.00000e+002   0.00000e+000
+        8    0    0    1      0.00000e+000   5.00000e+001   0.00000e+000
+
+ EQUATION NUMBERS
+
+   NODE NUMBER   DEGREES OF FREEDOM
+        N           X    Y    Z
+        1           0    0    0
+        2           0    0    0
+        3           1    2    0
+        4           3    4    0
+        5           0    0    0
+        6           5    6    0
+        7           7    8    0
+        8           9   10    0
+
+ L O A D   C A S E   D A T A
+
+     LOAD CASE NUMBER . . . . . . . =     1
+     NUMBER OF CONCENTRATED LOADS . =     3
+
+    NODE       DIRECTION      LOAD
+   NUMBER                   MAGNITUDE
+      3            2       1.00000e+003
+      7            2       1.00000e+003
+      4            2       1.00000e+003
+
+ E L E M E N T   G R O U P   D A T A
+
+
+ E L E M E N T   D E F I N I T I O N
+
+ ELEMENT TYPE  . . . . . . . . . . . . .( NPAR(1) ) . . =    8
+     EQ.1, TRUSS ELEMENTS
+     EQ.2, Q4 ELEMENTS
+     EQ.8, AX8R ELEMENTS
+     EQ.3, NOT AVAILABLE
+
+ NUMBER OF ELEMENTS. . . . . . . . . . .( NPAR(2) ) . . =    1
+
+ M A T E R I A L   D E F I N I T I O N
+
+ NUMBER OF DIFFERENT SETS OF MATERIAL
+ AND CROSS-SECTIONAL  CONSTANTS  . . . .( NPAR(3) ) . . =    1
+
+  SET       YOUNG'S     POISSON'S        DENSITY
+ NUMBER     MODULUS       RATIO                    
+               E            v              rou     
+    1    2.00000e+011    3.00000e-001    7.90000e+003
+
+
+ E L E M E N T   I N F O R M A T I O N
+ ELEMENT     NODE     NODE     NODE     NODE     NODE     NODE     NODE     NODE       MATERIAL
+ NUMBER-N      I        J        K        L        M        N        O        P       SET NUMBER
+    1          1        2        3        4        5        6        7        8           1
+
+	TOTAL SYSTEM DATA
+
+     NUMBER OF EQUATIONS . . . . . . . . . . . . . .(NEQ) = 10
+     NUMBER OF MATRIX ELEMENTS . . . . . . . . . . .(NWK) = 55
+     MAXIMUM HALF BANDWIDTH  . . . . . . . . . . . .(MK ) = 10
+     MEAN HALF BANDWIDTH . . . . . . . . . . . . . .(MM ) = 5
+
+
+ LOAD CASE    1
+
+
+ D I S P L A C E M E N T S
+
+  NODE           X-DISPLACEMENT    Y-DISPLACEMENT    Z-DISPLACEMENT
+    1              0.00000e+000      0.00000e+000      0.00000e+000
+    2              0.00000e+000      0.00000e+000      0.00000e+000
+    3             -2.35961e-011      5.08161e-011      0.00000e+000
+    4              2.84590e-011      1.45793e-010      0.00000e+000
+    5              0.00000e+000      0.00000e+000      0.00000e+000
+    6             -9.26745e-012      2.50785e-011      0.00000e+000
+    7             -5.66479e-012      4.07950e-011      0.00000e+000
+    8             -6.81351e-012      6.59712e-011      0.00000e+000
+
+ S T R E S S  C A L C U L A T I O N S  F O R  E L E M E N T  G R O U P    1
+
+Element Number    1
+Stress on GAUSS Points
+Stress on  Point    1
+        4.35956e-002        1.57202e-001       -1.69761e-002       -5.29012e-002
+Stress on  Point    2
+        1.11783e-003        2.16875e-001        5.40848e-002       -9.70017e-002
+Stress on  Point    3
+        4.83414e-002        7.89581e-002        2.44036e-002       -8.66210e-003
+Stress on  Point    4
+       -9.52349e-003        6.29688e-002       -2.40963e-002        1.68498e-002
+
+
+ S O L U T I O N   T I M E   L O G   I N   S E C 
+
+     TIME FOR INPUT PHASE = 2.38000e-001
+     TIME FOR CALCULATION OF STIFFNESS MATRIX = 2.50000e-002
+     TIME FOR FACTORIZATION AND LOAD CASE SOLUTIONS = 5.10000e-002
+
+     T O T A L   S O L U T I O N   T I M E = 3.66000e-001

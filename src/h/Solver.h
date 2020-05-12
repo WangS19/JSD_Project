@@ -76,16 +76,16 @@ class CModal : public CSolver
 private:
 
 	//! The tolerance for Jacobi
-	double Tol_J = 1.0e-9;
+	double Tol_J; //= 1.0e-9;
 
 	//! The tolerance for Lanczos
-	double Tol_L = 1.0e-9;
+	double Tol_L; //= 1.0e-9;
 
 	//! Number of required eigenvalues *(Input)
-	int Nroot = 2;
+	int Nroot; //= 2;
 
 	//! Maximum number of the restart, set 5 usually
-	int N_ite_max = 5;
+	int N_ite_max; //= 5;
 
 	//! Number of itegration vectors used
 	//! Usually set to be min(2*Nroot, Nroot+8), but less than the freedom of system
@@ -102,7 +102,7 @@ private:
 public:
 
 	//! Constructor
-	CModal(CSkylineMatrix<double>* K) : CSolver(K) {};
+	CModal(CSkylineMatrix<double>* K) : CSolver(K),Tol_J(1.0e-9),Tol_L(1.0e-9),Nroot(2),N_ite_max(5) {};
 
 	//! To solve the generalized eigenproblem with the Lanczos method
 	void Lanczos();
@@ -120,11 +120,13 @@ class CG_alpha : public CSolver
 {
 private:
 	//! spectral radius
-	double rho = 0.5;
+
+	double rho;
 
 	//! Damping coefficient *******
 	double C_alpha;
 	double C_beta;
+
 
 	//! The current motion message
 	double* dis;
@@ -138,10 +140,11 @@ private:
 	double* Force;
 
 	//! The time step	*******
+
 	double h;
 
 	//! The minimal quantity
-	const double eps = 1e-16;
+	double eps;
 
 	//!	List of all nodes in the domain
 	CNode* NodeList;
@@ -151,7 +154,12 @@ private:
 
 	//! Tecplot Output
 	COutputter* Tecplot_Output;
-	int TecplotOut_Interval = 20;
+
+	//! Paraview Output
+	COutputter* Paraview_Output;
+
+	//! The interval of animation output
+	int Ani_Interval;
 
 	//! History output which freedom
 	int N_His_Freedom;
@@ -160,7 +168,14 @@ private:
 public:
 
 	//! Constructor
-	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) {};
+
+	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) 
+	{
+		rho = 0.5;
+		Ani_Interval = 20;
+		eps = 1e-16;
+	};
+
 
 	//! Integration
 	void G_alpha_Intregration(CLoadCaseData& Load, int i_load);
@@ -186,6 +201,9 @@ public:
 
 	//! Obtain the Tecplot output file
 	void Obtain_TecOutput(COutputter* Tec_Output) { Tecplot_Output = Tec_Output; }
+
+	//! Obtain the Paraview output file
+	void Obtain_VTKOutput(COutputter* VTK_Output) { Paraview_Output = VTK_Output; }
 
 	//! Obtain the dynamics parameters
 	void Obtain_Dyn_Para(double* Dyn_Para) {
