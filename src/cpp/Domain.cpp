@@ -1056,10 +1056,10 @@ bool CDomain::ReadInpElements()
 
 bool CDomain::ReadInpHisMessage()
 {
-	Num_His_Output = 0;
+	Num_His_Output = 1;
 	His_freedom = new int[Num_His_Output * 2];
 	for (int i = 0; i < Num_His_Output * 2; i++) {
-		His_freedom[i]=0;
+		His_freedom[i] = 1;
 	}
 	return true;
 }
