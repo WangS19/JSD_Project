@@ -1028,11 +1028,13 @@ void COutputter::OutputVTKElemStress()
 				for (int i = 0; i < 3; i++)
 					averagestress[i] = averagestress[i]/NG/NG;
 
+				CQ4Material* material_ = dynamic_cast<CQ4Material*>(Element.GetElementMaterial());
+
 				//output averagestress
 				OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
 				OutputFile << setw(8) << averagestress[0] << " " << setw(8) << averagestress[2] << " " << setw(8) << 0 << endl;
 				OutputFile << setw(8) << averagestress[2] << " " << setw(8) << averagestress[1] << " " << setw(8) << 0 << endl;
-				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << 0 << endl;
+				OutputFile << setw(8) << 0 << " " << setw(8) << 0 << " " << setw(8) << ( averagestress[0] + averagestress[1] ) * material_->miu << endl;
 				OutputFile << endl;
 			}
 			break;

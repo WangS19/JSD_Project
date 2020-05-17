@@ -25,11 +25,33 @@ int main(int argc, char *argv[])
 
 	string filename(argv[1]);
     size_t found = filename.find_last_of('.');
+	string OutFile = filename + ".out";
+	CDomain* FEMData = CDomain::Instance();
 
     // If the input file name is provided with an extension
     if (found != std::string::npos) {
         if (filename.substr(found) == ".dat")
+		{
             filename = filename.substr(0, found);
+			string InFile = filename + ".dat";
+
+			//  Read data and define the problem domain
+			if (!FEMData->ReadData(InFile, OutFile))
+			{
+				cerr << "*** Error *** Data input failed!" << endl;
+				exit(1);
+			}
+		}
+		else if (filename.substr(found) == ".inp")
+		{
+			filename = filename.substr(0, found);
+			string InFile = filename + ".inp";
+			if (!FEMData->ReadInpData(InFile, OutFile))
+			{
+				cerr << "*** Error *** Data input failed!" << endl;
+				exit(1);
+			}
+		}
         else {
             // The input file name must has an extension of 'dat'
             cout << "*** Error *** Invalid file extension: "
@@ -39,7 +61,8 @@ int main(int argc, char *argv[])
     }
 
     string InFile = filename + ".dat";
-	string OutFile = filename + ".out";
+
+
 	string TecFile = filename + "_tec.dat";
 
 	string vtkFile = filename + ".vtk";
@@ -47,17 +70,12 @@ int main(int argc, char *argv[])
 	string HisFile = filename + ".his";
 
 
-	CDomain* FEMData = CDomain::Instance();
+	
 
     Clock timer;
     timer.Start();
 
-//  Read data and define the problem domain
-	if (!FEMData->ReadData(InFile, OutFile))
-	{
-		cerr << "*** Error *** Data input failed!" << endl;
-		exit(1);
-	}
+
 
 //  Output the result in tecplot form at the beginning including the head
 	COutputter* Tec_Output = COutputter::Tec_Instance(TecFile);

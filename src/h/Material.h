@@ -11,6 +11,8 @@
 #pragma once
 
 #include "Outputter.h"
+#include <istream>
+#include <string>
 
 using namespace std;
 
@@ -34,6 +36,9 @@ public:
 //!	Read material data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int mset) = 0;
 
+	//!	Read material data from stream Input(inp)
+	virtual bool ReadInp(ifstream& Input, unsigned int mset, streampos pMaterial) = 0;
+
 //!	Write material data to Stream
     virtual void Write(COutputter& output, unsigned int mset) = 0;
 
@@ -50,6 +55,9 @@ public:
 	
 //!	Read material data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int mset);
+
+	//!	Read material data from stream Input(inp)
+	virtual bool ReadInp(ifstream& Input, unsigned int mset, streampos pMaterial);
 
 //!	Write material data to Stream
 	virtual void Write(COutputter& output, unsigned int mset);
@@ -68,6 +76,9 @@ public:
 
 	//!	Read material data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int mset);
+	
+	//!	Read material data from stream Input(inp)
+	virtual bool ReadInp(ifstream& Input, unsigned int mset, streampos pMaterial);
 
 	//!	Write material data to Stream
 	virtual void Write(COutputter& output, unsigned int mset);
@@ -83,6 +94,9 @@ public:
 
 	//!	Read material data from stream Input
 	virtual bool Read(ifstream& Input, unsigned int mset);
+
+	//!	Read material data from stream Input(inp)
+	virtual bool ReadInp(ifstream& Input, unsigned int mset, streampos pMaterial);
 
 	//!	Write material data to Stream
 	virtual void Write(COutputter& output, unsigned int mset);

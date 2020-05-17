@@ -301,6 +301,19 @@ void CAX8R::ElementStress(double* stress/* 4*4 */, double* Displacement)
 		}
 	}
 }
+bool CAX8R::ReadInp(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList, unsigned int m_set , unsigned int ** Elements)
+{
+	ElementMaterial_ = dynamic_cast<CAX8RMaterial*>(MaterialSets) + m_set - 1;
+	nodes_[0] = &NodeList[Elements[Ele][0] - 1];
+	nodes_[1] = &NodeList[Elements[Ele][1] - 1];
+	nodes_[2] = &NodeList[Elements[Ele][2] - 1];
+	nodes_[3] = &NodeList[Elements[Ele][3] - 1];
+	nodes_[4] = &NodeList[Elements[Ele][4] - 1];
+	nodes_[5] = &NodeList[Elements[Ele][5] - 1];
+	nodes_[6] = &NodeList[Elements[Ele][6] - 1];
+	nodes_[7] = &NodeList[Elements[Ele][7] - 1];
+	return true;
+}
 bool CAX8R::Read(ifstream& Input, unsigned int Ele, CMaterial* MaterialSets, CNode* NodeList)
 {
 	unsigned int N;
