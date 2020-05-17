@@ -380,13 +380,13 @@ void CAX8R::ElementMass(double* Matrix)
 	
 	
 	double r;
-	for (int Gx = 0; Gx < NG; Gx++) 
+	for (int Gx = 0; Gx < NG+1; Gx++) //质量阵采用3*3积分才与ABAQUS一致所以NG+1
 	{
-		double g = XG[Gx][NG - 1];
-		for (int Gy = 0; Gy < NG; Gy++) 
+		double g = XG[Gx][NG];       //质量阵采用3*3积分才与ABAQUS一致所以后面的指标为NG，不是NG-1
+		for (int Gy = 0; Gy < NG+1; Gy++) 
 		{
-			double h = XG[Gy][NG - 1];
-			double WT = WGT[Gx][NG-1] * WGT[Gy][NG-1];
+			double h = XG[Gy][NG];
+			double WT = WGT[Gx][NG] * WGT[Gy][NG];
 
 			//! Construct the shape function
 			double N[8];
@@ -438,6 +438,17 @@ void CAX8R::ElementMass(double* Matrix)
 			MM[m*2+1][n*2+1] = MM[m*2][n*2];
 		}
 					
+	}
+	// CAX8R单元质量阵用
+	//对角元放大，系数1.1842满足质量守恒,转化为集中质量阵
+	for (int i = 0; i < 16; i++) {
+		for(int j = 0; j < 16; j++){
+			if(i==j)
+				MM[i][j] = 1.1842*MM[i][j];
+			else
+				MM[i][j] = 0;
+		}
+		
 	}
 	//! Extend MM into 24*24 matrix M
 	double M[24][24];

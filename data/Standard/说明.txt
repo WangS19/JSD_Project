@@ -4,4 +4,6 @@ example2：动力学分析，二维悬臂梁端部受面力载荷
 
 example3：静力学分析，4个Q4单元的分析
 
-example4：静力学分析，1个AX8R单元，这个分析中VTK的输出有bug
+example4：静力学分析，1个AX8R单元
+
+example5: 动力学分析，1个AX8R单元，尚未成功

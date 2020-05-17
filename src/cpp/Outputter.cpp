@@ -34,6 +34,7 @@ void COutputter::PrintTime(const struct tm* ptm, COutputter &output)
 }
 
 COutputter* COutputter::_instance = nullptr;
+
 COutputter* COutputter::tec_instance = nullptr;
 
 COutputter* COutputter::vtk_instance = nullptr;
