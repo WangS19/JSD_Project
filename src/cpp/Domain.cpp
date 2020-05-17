@@ -201,6 +201,8 @@ streampos CDomain :: seekset(string target, string set)
 			size_t commab = 0;
 			commaa=line.find(',',0);
 			commab=line.find(',',commaa+1);
+			if (commab > line.length() )
+				commab =line.length();
 			string tmp = line.substr(commab-target.length(),target.length()).c_str();
 			if (!(stricmp(tmp.c_str(), target.c_str())))                        // find "Set-?"
 				break;
@@ -483,8 +485,8 @@ bool CDomain::ReadInpLoadCases()
 	streampos pnow = 0;
 	streampos pstep = seek("*Step",pnow,pflag);
 	streampos pendstep = seek("*End Step",pstep,pflag);
-	unsigned NCL = countcode("*Cload",pstep,pendstep);
-	unsigned NL = 0;
+	unsigned int NCL = countcode("*Cload",pstep,pendstep);
+	unsigned int NL = 0;
 	streampos pend_assembly = seek( "*End Assembly",0,pflag);
 
 	switch(MODEX)
@@ -648,15 +650,15 @@ bool CDomain::ReadInpLoadCases()
 
 				streampos pthisset = seekset( set, "*Nset");
 				Input.seekg(pthisset, ios_base :: beg);
-				char *buff = new char [5];
-				memset(buff,0,6);
-				char *content = new char [5];
-				strcpy(content,"*Nset");
-				while(Input.read(buff,5))
+				char *buff = new char [1];
+				memset(buff,0,2);
+//				char *content = new char [5];
+//				strcpy(content,"*Nset");
+				while(Input.read(buff,1))
 				{
-					Input.seekg(-5, ios :: cur);
+					Input.seekg(-1, ios :: cur);
 
-					if(!strcmp(content,buff))
+					if(!strcmp("*",buff))
 						break;
 					getline(Input,line);
 					if(Input.tellg() > pend_assembly)
@@ -672,7 +674,7 @@ bool CDomain::ReadInpLoadCases()
 			}
 			Input.seekg(pnow, ios_base :: beg);
 			LoadCases[lcase].Allocate(NL);
-			unsigned fnum = 0;
+			unsigned int fnum = 0;
 
 			pnow = seek("*Step", 0, pflag);
 				for (unsigned int nstep = 0; nstep < lcase; nstep ++)
@@ -754,11 +756,29 @@ bool CDomain::ReadInpLoadCases()
 				while (strcmp(cbuff1,"*"))
 				{
 					Input.seekg(-1, ios :: cur);
-					getline(Input,line);
 					size_t commaa = 0;
-					size_t commab = 0;
-					commaa = line.find(',',0);
-					LoadCases[lcase].node[fnum] = atoi(line.substr(0,comma).c_str());
+					streampos ptemp = Input.tellg();
+					getline(Input,line);
+					unsigned int length = line.length();
+					while(commaa < length)
+					{
+						commaa = line.find(',',0);
+						Input.seekg(ptemp, ios_base::beg);
+						getline(Input,line,',');
+						ptemp = Input.tellg();
+						LoadCases[lcase].node[fnum] = atoi(line.c_str());
+						LoadCases[lcase].dof[fnum] = dof;
+						LoadCases[lcase].load[fnum] = load;
+						LoadCases[lcase].a_[fnum] = a_;
+						LoadCases[lcase].b_[fnum] = b_;
+						LoadCases[lcase].c_[fnum] = c_;
+						LoadCases[lcase].d_[fnum] = d_;
+						LoadCases[lcase].e_[fnum] = e_;
+						getline(Input,line);
+						length = line.length();
+						fnum ++;
+					}
+					LoadCases[lcase].node[fnum] = atoi(line.c_str());
 					LoadCases[lcase].dof[fnum] = dof;
 					LoadCases[lcase].load[fnum] = load;
 					LoadCases[lcase].a_[fnum] = a_;
@@ -766,28 +786,7 @@ bool CDomain::ReadInpLoadCases()
 					LoadCases[lcase].c_[fnum] = c_;
 					LoadCases[lcase].d_[fnum] = d_;
 					LoadCases[lcase].e_[fnum] = e_;
-					while ( commaa < line.length())
-					{
-						fnum++;
-						commab = line.find(',',commaa+1);
-						if ( !(commaa == line.length() - 1) )
-						{
-							commab = line.find(',',commaa+1);
-							if (commab > line.length())
-								commab = line.length();
-							LoadCases[lcase].node[fnum]  = atoi(line.substr(commaa+1,commab-commaa-1).c_str());
-							LoadCases[lcase].dof[fnum] = dof;
-							LoadCases[lcase].load[fnum] = load;
-							LoadCases[lcase].a_[fnum] = a_;
-							LoadCases[lcase].b_[fnum] = b_;
-							LoadCases[lcase].c_[fnum] = c_;
-							LoadCases[lcase].d_[fnum] = d_;
-							LoadCases[lcase].e_[fnum] = e_;
-							commaa = commab;
-						}
-						else
-							break;
-					}
+					fnum ++;
 					Input.read(cbuff1,1);
 				}
 			}
