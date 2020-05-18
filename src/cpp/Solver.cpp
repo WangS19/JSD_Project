@@ -324,7 +324,8 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 			for (unsigned int j = 0; j < NEQ; j++) {
 				if (j == 1833)
 					j = 1833;
-				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
+				acc_p[i] -= (*K)(i + 1, j + 1) * dis[j];
+				acc_p[i] += (*C)(i + 1, j + 1) * vel[j];
 			}
 				
 			acc_p[i] /= L_M[i];
@@ -401,7 +402,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 			num_freedom[i] = NodeList[Freedom_output[2 * i] - 1].bcode[Freedom_output[2 * i + 1] - 1];
 		}
 		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
-
+		delete[] num_freedom;
 		// Tecplot Output
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
@@ -414,6 +415,15 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		// Store the motion messages of the last step
 		Store_message(dis_p, vel_p, acc_p, Force_p);
 	}
+
+
+	//delete C;
+	//delete[] dis_p;
+	//delete[] vel_p;
+	//delete[] acc_p;
+	//delete[] Force_p;
+	
+
 }
 
 double* CG_alpha::Cur_Force(double time, CLoadCaseData& load)
