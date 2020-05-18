@@ -517,6 +517,10 @@ void COutputter::OutputTecplot(int step)
 		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT "<< "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
 	else if (Element_Type == 1)
 		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << (double)step << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl; 
+	else {
+		OutputFile << "Element Type" << Element_Type << "cannot be output with tecplot";
+		return;
+	}
 
 	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
 	double* dis_vector = new double[3 * NUMNP];
@@ -578,6 +582,10 @@ void COutputter::OutputTecplot(double time, double* dis)
 		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=QUADRILATERAL C=CYAN" << endl;
 	else if (Element_Type == 1)
 		OutputFile << "ZONE T=\"Time = " << setw(12) << setprecision(4) << time << "\"" << " F=FEPOINT " << "N=" << setw(5) << NUMNP << " E=" << setw(5) << NUME << " ET=LINESEG C=CYAN" << endl;
+	else {
+		OutputFile << "Element Type" << Element_Type << "cannot be output with tecplot";
+		return;
+	}
 
 	// Calculate the position of nodes after simulation. It will not be done here in the dynamics situation
 	double* dis_vector = new double[3 * NUMNP];

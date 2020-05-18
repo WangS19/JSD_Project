@@ -347,19 +347,6 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	CSkylineMatrix<double>* K_e = new CSkylineMatrix<double>(NEQ);
 	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
-	//// ****for debug****
-	//unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
-	//cout << setiosflags(ios::scientific) << setprecision(5);
-	//for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
-	//	cout << setw(14) << (*K_e)(i);
-
-	//	if ((i + 1) % 6 == 0)
-	//	{
-	//		cout << endl;
-	//	}
-	//}
-	//cout << endl;
-
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
 
@@ -412,7 +399,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		// Tecplot Output
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
-			//Tecplot_Output->OutputTecplot(t, dis);
+			Tecplot_Output->OutputTecplot(t, dis);
 			Paraview_Output->OutputVTK(t, dis);
 		}
 
@@ -423,12 +410,6 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	}
 
 
-	//delete C;
-	//delete[] dis_p;
-	//delete[] vel_p;
-	//delete[] acc_p;
-	//delete[] Force_p;
-	
 
 }
 
