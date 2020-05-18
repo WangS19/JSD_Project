@@ -28,7 +28,7 @@ template <class type> void clear(type* a, unsigned int N)
 
 CSolver::CSolver(CSkylineMatrix<double>* K) : K(K) {};
 
-CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};	
+CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};
 
 
 // Calculate the lumped mass matrix
@@ -321,8 +321,12 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		Force_p = Cur_Force(t, Load);
 		for (unsigned int i = 0; i < NEQ; i++) {
 			acc_p[i] = Force_p[i];
-			for (unsigned int j = 0; j < NEQ; j++)
+			for (unsigned int j = 0; j < NEQ; j++) {
+				if (j == 1833)
+					j = 1833;
 				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
+			}
+				
 			acc_p[i] /= L_M[i];
 		}
 		int* num_freedom = new int[N_His_Freedom];

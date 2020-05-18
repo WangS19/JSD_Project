@@ -169,7 +169,7 @@ public:
 
 	//! Constructor
 
-	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) 
+	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M)
 	{
 		rho = 0.5;
 		Ani_Interval = 20;
