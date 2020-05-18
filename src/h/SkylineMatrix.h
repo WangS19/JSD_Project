@@ -140,10 +140,15 @@ inline CSkylineMatrix<T_>::~CSkylineMatrix<T_>()
 template <class T_>
 inline T_& CSkylineMatrix<T_>::operator()(unsigned int i, unsigned int j)
 {
-	if (j >= i)
-        return data_[DiagonalAddress_[j - 1] + (j - i) - 1];
-    else
-        return data_[DiagonalAddress_[i - 1] + (i - j) - 1];
+	if (j >= i) {
+		int k1 = DiagonalAddress_[j - 1] + (j - i) - 1;
+		return data_[k1];
+	}	
+	else {
+		int k2 = DiagonalAddress_[i - 1] + (i - j) - 1;
+		return data_[k2];
+	}
+        
 }
 
 //! operator function (i) where i numbers from 1

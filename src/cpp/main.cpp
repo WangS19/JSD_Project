@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
 //  Output the result in tecplot form at the beginning including the head
 	COutputter* Tec_Output = COutputter::Tec_Instance(TecFile);
-	Tec_Output->OutputTecplot(0);
+	//Tec_Output->OutputTecplot(0);
 
 //  Output head,nodes and elements information to vtkfile
 	COutputter* vtk_Output = COutputter::vtk_Instance(vtkFile);
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 	vtk_Output->OutputVTK();
 
 //  Output the result in tecplot form
-	Tec_Output->OutputTecplot(1);
+	//Tec_Output->OutputTecplot(1);
 
 	}
 

@@ -271,6 +271,8 @@ void CModal::Orth()
 // Integration with the newly G_alpha method
 void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 {
+
+	unsigned int* DiagonalAddress = K->GetDiagonalAddress();
 	// Calculate the lumped mass matrix
 	Cal_LM();
 
@@ -322,12 +324,16 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		for (unsigned int i = 0; i < NEQ; i++) {
 			acc_p[i] = Force_p[i];
 			for (unsigned int j = 0; j < NEQ; j++) {
-				if (j == 1833)
-					j = 1833;
-				acc_p[i] -= (*K)(i + 1, j + 1) * dis[j];
-				acc_p[i] += (*C)(i + 1, j + 1) * vel[j];
+				int H;
+				if (j >= i)
+					H = DiagonalAddress[j + 1] - DiagonalAddress[j];
+				else
+					H = DiagonalAddress[i + 1] - DiagonalAddress[i];
+				if ((j - i - H < 0) && (i - j - H < 0)) {
+					acc_p[i] -= (*K)(i + 1, j + 1) * dis[j];
+					acc_p[i] += (*C)(i + 1, j + 1) * vel[j];
+				}
 			}
-				
 			acc_p[i] /= L_M[i];
 		}
 		int* num_freedom = new int[N_His_Freedom];
@@ -366,7 +372,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		t += h;				// t = (i + 1) * h
 
 		double* F = Cur_Force(t, Load);		// F_t, that is, Force
-		unsigned int* DiagonalAddress = K->GetDiagonalAddress();
+		
 
 		// Generate the effective force vector -- Eq(62)
 		double* F_e = new double[NEQ];
@@ -406,7 +412,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		// Tecplot Output
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
-			Tecplot_Output->OutputTecplot(t, dis);
+			//Tecplot_Output->OutputTecplot(t, dis);
 			Paraview_Output->OutputVTK(t, dis);
 		}
 
