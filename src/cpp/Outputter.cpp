@@ -71,7 +71,7 @@ COutputter* COutputter::Tec_Instance(string FileName)
 
 COutputter* COutputter::vtk_Instance(string FileName)
 {
-	if (!vtk_instance)
+//	if (!vtk_instance)
 		vtk_instance = new COutputter(FileName);
 	return vtk_instance;
 }
@@ -622,19 +622,22 @@ void COutputter::OutputTecplot(double time, double* dis)
 }
 
 
-void COutputter::OutputVTK()//need a reload (double time,double* dis)
+void COutputter::OutputVTK()
 {
 	OutputVTKNodalDis();
 	OutputVTKElemStress();
 }
 
-void COutputter::OutputVTK(double time, double* dis)
+void COutputter::OutputVTK(double* dis)
 {
-	OutputVTKNodalDis(time, dis);
-	OutputVTKElemStress(time, dis);
+	OutputVTKHead();
+	OutputVTKNodes();
+	OutputVTKElements();
+	OutputVTKNodalDis(dis);
+	OutputVTKElemStress(dis);
 }
 
-void COutputter::OutputVTKNodalDis(double time, double* dis)
+void COutputter::OutputVTKNodalDis(double* dis)
 {
 	CDomain* FEMData = CDomain::Instance();
 	CNode* NodeList = FEMData->GetNodeList();
@@ -662,7 +665,7 @@ void COutputter::OutputVTKNodalDis(double time, double* dis)
 
 	OutputFile << "POINT_DATA" << setw(8) << NUMNP << endl;
 	OutputFile << setiosflags(ios::left);
-	OutputFile << "VECTORS DISPLACEMENT_" << setw(8) << time <<" double" << endl;
+	OutputFile << "VECTORS DISPLACEMENT" <<" double" << endl;
 	OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
 	for (unsigned int np = 0; np < NUMNP; np++)
 		OutputFile << setw(8) << Dis[np][0] << "    " << setw(8) << Dis[np][1] << "    " << setw(8) << Dis[np][2] << endl;
@@ -673,7 +676,7 @@ void COutputter::OutputVTKNodalDis(double time, double* dis)
 	delete []Dis;
 }
 
-void COutputter::OutputVTKElemStress(double time, double *dis)
+void COutputter::OutputVTKElemStress(double *dis)
 {
 	CDomain* FEMData = CDomain::Instance();
 
@@ -691,7 +694,7 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 		OutputFile << "CELL_DATA " << setw(8) << NUMEALL << endl;
 		//Tensor
 		OutputFile << setiosflags(ios::left);
-		OutputFile << "TENSORS " << "Element_Stress" << setw(8) << time << " double" << endl;
+		OutputFile << "TENSORS " << "Element_Stress" << " double" << endl;
 	}
 
 	for (unsigned int EleGrpIndex = 0; EleGrpIndex < NUMEG; EleGrpIndex++)
@@ -722,8 +725,8 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 					// Output element stress
 					OutputFile << "CELL_DATA " << setw(8) << NUME << endl;
 					OutputFile << setiosflags(ios::left);
-					OutputFile << "SCALARS " << "Stress" << setw(8) << time << " double " << "1" << endl;
-					OutputFile << "LOOKUP_TABLE " << "Element_Stress" << setw(8) << time <<endl;
+					OutputFile << "SCALARS " << "Stress" << " double " << "1" << endl;
+					OutputFile << "LOOKUP_TABLE " << "Element_Stress" <<endl;
 					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
 					for (int i = 0; i < NUME; i++)
 						OutputFile << setw(8) << stress[i][0] << endl;
@@ -731,8 +734,8 @@ void COutputter::OutputVTKElemStress(double time, double *dis)
 
 					// Output element force
 					OutputFile << setiosflags(ios::left);
-					OutputFile << "SCALARS " << "Force" << setw(8) << time << " double " << "1" << endl;
-					OutputFile << "LOOKUP_TABLE " << "Element_Force" << setw(8) << time << endl;
+					OutputFile << "SCALARS " << "Force" << " double " << "1" << endl;
+					OutputFile << "LOOKUP_TABLE " << "Element_Force" << endl;
 					OutputFile << setiosflags(ios::right) << setiosflags(ios::scientific);
 					for (int i = 0; i < NUME; i++)
 						OutputFile << setw(8) << stress[i][1] << endl;

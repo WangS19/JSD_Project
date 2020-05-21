@@ -119,9 +119,9 @@ public:
 	void OutputVTKElemStress();
 
 //! Overload OututVTK()&Nodaldis&ElemStress for dynamic problem
-	void OutputVTK(double time,double* dis);
-	void OutputVTKNodalDis(double time, double* dis);
-	void OutputVTKElemStress(double time, double* dis);
+	void OutputVTK(double* dis);
+	void OutputVTKNodalDis(double* dis);
+	void OutputVTKElemStress(double* dis);
 
 //! Overload: Output into tecplot (for dynamics analysis)
 	void OutputTecplot(double time, double* dis);

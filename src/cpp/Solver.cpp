@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -269,7 +270,7 @@ void CModal::Orth()
 }
 
 // Integration with the newly G_alpha method
-void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
+void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename)
 {
 
 	unsigned int* DiagonalAddress = K->GetDiagonalAddress();
@@ -400,7 +401,13 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
-			Paraview_Output->OutputVTK(t, dis);
+			
+			ostringstream convert;
+			convert << t;
+			string vtkFile = filename + "_" + convert.str() + ".vtk";
+			COutputter*vtk_Output = Paraview_Output->vtk_Instance(vtkFile);
+			Obtain_VTKOutput(vtk_Output);
+			Paraview_Output->OutputVTK(dis);
 		}
 
 		Tec_Count += 1;
