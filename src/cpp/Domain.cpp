@@ -89,7 +89,7 @@ bool CDomain::ReadInpData(string FileName, string OutFile)
 	string line2;
 	getline(Input,line1);
 	getline(Input,line2);
-	strcpy(Title,(line1+"\n"+line2).c_str() );
+	strcpy(Title,(line1+"    "+line2).c_str() );
 	Output->OutputHeading();
 
 
