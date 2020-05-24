@@ -778,6 +778,11 @@ bool CDomain::ReadInpLoadCases()
 						length = line.length();
 						fnum ++;
 					}
+					if(!length)
+					{
+						Input.read(cbuff1,1);
+						continue;
+					}
 					LoadCases[lcase].node[fnum] = atoi(line.c_str());
 					LoadCases[lcase].dof[fnum] = dof;
 					LoadCases[lcase].load[fnum] = load;
