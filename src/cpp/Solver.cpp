@@ -16,7 +16,6 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include <sstream>
 
 using namespace std;
 
@@ -353,6 +352,8 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string file
 
 	// Count the Tecplot output
 	int Tec_Count = 1;
+	// Count the VTK output
+	int VTK_Count = 1;
 
 	// Integration
 	while (t < time_load)
@@ -402,14 +403,12 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string file
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
 			
-			ostringstream convert;
-			convert << t;
-			string vtkFile = filename + "_" + convert.str() + ".vtk";
+			string vtkFile = filename + "_" + to_string(VTK_Count) + ".vtk";
+			VTK_Count += 1;
 			COutputter*vtk_Output = Paraview_Output->vtk_Instance(vtkFile);
 			Obtain_VTKOutput(vtk_Output);
-			Paraview_Output->OutputVTK(dis);
+			Paraview_Output->OutputVTK(t,dis);
 		}
-
 		Tec_Count += 1;
 
 		// Store the motion messages of the last step

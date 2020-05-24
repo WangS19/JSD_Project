@@ -628,9 +628,9 @@ void COutputter::OutputVTK()
 	OutputVTKElemStress();
 }
 
-void COutputter::OutputVTK(double* dis)
+void COutputter::OutputVTK(double t, double* dis)
 {
-	OutputVTKHead();
+	OutputVTKHead(t);
 	OutputVTKNodes();
 	OutputVTKElements();
 	OutputVTKNodalDis(dis);
@@ -821,6 +821,16 @@ void COutputter::OutputVTKHead()
 	CDomain* FEMData = CDomain::Instance();
 	OutputFile << "# vtk DataFile Version 3.0" <<endl;
 	OutputFile << "\"" << FEMData->GetTitle() << "\"" << endl;
+	OutputFile << "ASCII" << endl;
+	OutputFile << "DATASET UNSTRUCTURED_GRID" << endl
+			   << endl;
+}
+
+void COutputter::OutputVTKHead(double t)
+{
+	CDomain* FEMData = CDomain::Instance();
+	OutputFile << "# vtk DataFile Version 3.0" <<endl;
+	OutputFile << "\"" << FEMData->GetTitle() << "\"" << setw(8) << " "<< "t=" << t << endl;
 	OutputFile << "ASCII" << endl;
 	OutputFile << "DATASET UNSTRUCTURED_GRID" << endl
 			   << endl;
