@@ -28,7 +28,7 @@ template <class type> void clear(type* a, unsigned int N)
 
 CSolver::CSolver(CSkylineMatrix<double>* K) : K(K) {};
 
-CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};	
+CSolver::CSolver(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : K(K), M(M) {};
 
 
 // Calculate the lumped mass matrix
@@ -269,8 +269,10 @@ void CModal::Orth()
 }
 
 // Integration with the newly G_alpha method
-void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
+void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename , int* pVTK_Count)
 {
+
+	unsigned int* DiagonalAddress = K->GetDiagonalAddress();
 	// Calculate the lumped mass matrix
 	Cal_LM();
 
@@ -321,8 +323,17 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		Force_p = Cur_Force(t, Load);
 		for (unsigned int i = 0; i < NEQ; i++) {
 			acc_p[i] = Force_p[i];
-			for (unsigned int j = 0; j < NEQ; j++)
-				acc_p[i] -= ((*K)(i + 1, j + 1) * dis[j] - (*C)(i + 1, j + 1) * vel[j]);
+			for (unsigned int j = 0; j < NEQ; j++) {
+				int H;
+				if (j >= i)
+					H = DiagonalAddress[j + 1] - DiagonalAddress[j];
+				else
+					H = DiagonalAddress[i + 1] - DiagonalAddress[i];
+				if ((j - i - H < 0) && (i - j - H < 0)) {
+					acc_p[i] -= (*K)(i + 1, j + 1) * dis[j];
+					acc_p[i] += (*C)(i + 1, j + 1) * vel[j];
+				}
+			}
 			acc_p[i] /= L_M[i];
 		}
 		int* num_freedom = new int[N_His_Freedom];
@@ -336,19 +347,6 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 	CSkylineMatrix<double>* K_e = new CSkylineMatrix<double>(NEQ);
 	K_e->Generate_Ke(K, C, L_M, m1, m2, m3);
 
-	//// ****for debug****
-	//unsigned int* DiagonalAddress = K_e->GetDiagonalAddress();
-	//cout << setiosflags(ios::scientific) << setprecision(5);
-	//for (int i = 0; i < DiagonalAddress[NEQ] - DiagonalAddress[0]; i++) {
-	//	cout << setw(14) << (*K_e)(i);
-
-	//	if ((i + 1) % 6 == 0)
-	//	{
-	//		cout << endl;
-	//	}
-	//}
-	//cout << endl;
-
 	// LDLT the effective stiffness matrix -- Eq(61)
 	LDLT(K_e);
 
@@ -361,7 +359,7 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		t += h;				// t = (i + 1) * h
 
 		double* F = Cur_Force(t, Load);		// F_t, that is, Force
-		unsigned int* DiagonalAddress = K->GetDiagonalAddress();
+		
 
 		// Generate the effective force vector -- Eq(62)
 		double* F_e = new double[NEQ];
@@ -397,19 +395,27 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 			num_freedom[i] = NodeList[Freedom_output[2 * i] - 1].bcode[Freedom_output[2 * i + 1] - 1];
 		}
 		His_Output->OutputHisMessage(t, dis, vel, acc, N_His_Freedom, num_freedom);
-
+		delete[] num_freedom;
 		// Tecplot Output
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
-			Paraview_Output->OutputVTK(t, dis);
+			
+			int VTK_Count = *pVTK_Count;
+			string vtkFile = filename + "_" + to_string(VTK_Count) + ".vtk";
+			*pVTK_Count += 1;
+			COutputter*vtk_Output = Paraview_Output->vtk_Instance(vtkFile);
+			Obtain_VTKOutput(vtk_Output);
+			Paraview_Output->OutputVTK(t,dis);
 		}
-
 		Tec_Count += 1;
 
 		// Store the motion messages of the last step
 		Store_message(dis_p, vel_p, acc_p, Force_p);
 	}
+
+
+
 }
 
 double* CG_alpha::Cur_Force(double time, CLoadCaseData& load)

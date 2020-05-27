@@ -106,6 +106,9 @@ public:
 //! Output head into vtk files
 	void OutputVTKHead();
 
+//! Output head into vtk files for dynamic
+	void OutputVTKHead(double t);
+
 //! Output node information into vtk files
 	void OutputVTKNodes();
 
@@ -119,9 +122,9 @@ public:
 	void OutputVTKElemStress();
 
 //! Overload OututVTK()&Nodaldis&ElemStress for dynamic problem
-	void OutputVTK(double time,double* dis);
-	void OutputVTKNodalDis(double time, double* dis);
-	void OutputVTKElemStress(double time, double* dis);
+	void OutputVTK(double t, double* dis);
+	void OutputVTKNodalDis(double* dis);
+	void OutputVTKElemStress(double* dis);
 
 //! Overload: Output into tecplot (for dynamics analysis)
 	void OutputTecplot(double time, double* dis);

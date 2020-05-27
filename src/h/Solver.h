@@ -169,7 +169,7 @@ public:
 
 	//! Constructor
 
-	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M) 
+	CG_alpha(CSkylineMatrix<double>* K, CSkylineMatrix<double>* M) : CSolver(K,M)
 	{
 		rho = 0.5;
 		Ani_Interval = 20;
@@ -178,7 +178,7 @@ public:
 
 
 	//! Integration
-	void G_alpha_Intregration(CLoadCaseData& Load, int i_load);
+	void G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename, int* pVTK_Count);
 
 	//! Recall the motion messages of the end of the last load
 	void Recall_message(int iload, double* dis, double* vel, double* acc, double* Force);
