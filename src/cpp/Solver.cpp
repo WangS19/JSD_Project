@@ -269,7 +269,7 @@ void CModal::Orth()
 }
 
 // Integration with the newly G_alpha method
-void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
+void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename , int* pVTK_Count)
 {
 
 	unsigned int* DiagonalAddress = K->GetDiagonalAddress();
@@ -400,9 +400,14 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load)
 		if (fmod((double)Tec_Count, (double)Ani_Interval) == 0) {
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
-			Paraview_Output->OutputVTK(t, dis);
+			
+			int VTK_Count = *pVTK_Count;
+			string vtkFile = filename + "_" + to_string(VTK_Count) + ".vtk";
+			*pVTK_Count += 1;
+			COutputter*vtk_Output = Paraview_Output->vtk_Instance(vtkFile);
+			Obtain_VTKOutput(vtk_Output);
+			Paraview_Output->OutputVTK(t,dis);
 		}
-
 		Tec_Count += 1;
 
 		// Store the motion messages of the last step

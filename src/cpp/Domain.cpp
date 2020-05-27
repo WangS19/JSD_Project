@@ -91,7 +91,7 @@ bool CDomain::ReadInpData(string FileName, string OutFile)
 	getline(Input,line2);
 	strcpy(Title,(line1+"\n"+line2).c_str() );
 	Output->OutputHeading();
-
+	strcpy(Title,(line1+"    "+line2).c_str() );
 
 	// Read NUMNP,NUMEG,NLCASE,MODEX
 	int flag=0;
@@ -142,8 +142,8 @@ bool CDomain::ReadInpData(string FileName, string OutFile)
 
 	if (MODEX == 3)
 	{
-		Dyna_para[1] = 0.01;
-		Dyna_para[2] = 0.01;
+		Dyna_para[1] = 0;
+		Dyna_para[2] = 0;
 		streampos pdynamic = seek( "*Dynamic",0 , pflag);
 		Input.seekg( pdynamic, ios_base :: beg);
 		size_t comma = 0;
@@ -777,6 +777,11 @@ bool CDomain::ReadInpLoadCases()
 						getline(Input,line);
 						length = line.length();
 						fnum ++;
+					}
+					if(!length)
+					{
+						Input.read(cbuff1,1);
+						continue;
 					}
 					LoadCases[lcase].node[fnum] = atoi(line.c_str());
 					LoadCases[lcase].dof[fnum] = dof;
