@@ -269,7 +269,7 @@ void CModal::Orth()
 }
 
 // Integration with the newly G_alpha method
-void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename)
+void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename , int* pVTK_Count)
 {
 
 	unsigned int* DiagonalAddress = K->GetDiagonalAddress();
@@ -352,8 +352,6 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string file
 
 	// Count the Tecplot output
 	int Tec_Count = 1;
-	// Count the VTK output
-	int VTK_Count = 1;
 
 	// Integration
 	while (t < time_load)
@@ -403,8 +401,9 @@ void CG_alpha::G_alpha_Intregration(CLoadCaseData& Load, int i_load, string file
 			cout << "Output Tecplot and Paraview, Time =  " << t << endl;
 			Tecplot_Output->OutputTecplot(t, dis);
 			
+			int VTK_Count = *pVTK_Count;
 			string vtkFile = filename + "_" + to_string(VTK_Count) + ".vtk";
-			VTK_Count += 1;
+			*pVTK_Count += 1;
 			COutputter*vtk_Output = Paraview_Output->vtk_Instance(vtkFile);
 			Obtain_VTKOutput(vtk_Output);
 			Paraview_Output->OutputVTK(t,dis);

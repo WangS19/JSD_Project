@@ -192,11 +192,14 @@ int main(int argc, char *argv[])
 		// Paraview Output
 		G_alpha_->Obtain_VTKOutput(vtk_Output);
 
+		// Count the VTK output
+		int VTK_Count = 1;
+		int* pVTK_Count = &VTK_Count;
 		for (unsigned int i = 0; i < FEMData->GetNLCASE(); i++)
 		{
 			*Output << "	Begin the Load case		" << i + 1 << endl;
 			// Integration with the newly G_alpha method
-			G_alpha_->G_alpha_Intregration(Loads[i], i, filename);
+			G_alpha_->G_alpha_Intregration(Loads[i], i, filename, pVTK_Count);
 			*Output << "	Finish the Load case		" << i + 1 << endl;
 		}
 

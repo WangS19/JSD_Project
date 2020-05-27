@@ -178,7 +178,7 @@ public:
 
 
 	//! Integration
-	void G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename);
+	void G_alpha_Intregration(CLoadCaseData& Load, int i_load, string filename, int* pVTK_Count);
 
 	//! Recall the motion messages of the end of the last load
 	void Recall_message(int iload, double* dis, double* vel, double* acc, double* Force);

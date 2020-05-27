@@ -142,8 +142,8 @@ bool CDomain::ReadInpData(string FileName, string OutFile)
 
 	if (MODEX == 3)
 	{
-		Dyna_para[1] = 0.01;
-		Dyna_para[2] = 0.01;
+		Dyna_para[1] = 0;
+		Dyna_para[2] = 0;
 		streampos pdynamic = seek( "*Dynamic",0 , pflag);
 		Input.seekg( pdynamic, ios_base :: beg);
 		size_t comma = 0;
