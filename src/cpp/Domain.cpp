@@ -708,9 +708,13 @@ bool CDomain::ReadInpLoadCases()
 				double d_ = 0;
 				double e_ = 0;
 
-				Dyna_para[1] = 0.01;
-				Dyna_para[2] = 0.01;
 				streampos pdynamic = seek( "*Dynamic",0 , pflag);
+				for (int i = 0; i < lcase ; i++)
+				{
+					getline(Input,line);
+					streampos pbuff = Input.tellg(); 
+					pdynamic = seek( "*Dynamic",pbuff , pflag);
+				}
 				Input.seekg( pdynamic, ios_base :: beg);
 				size_t comma_1 = 0;
 				size_t comma_2 = 0;

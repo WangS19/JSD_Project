@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
 	string filename(argv[1]);
     size_t found = filename.find_last_of('.');
-	string OutFile = filename + ".out";
+
 	CDomain* FEMData = CDomain::Instance();
 
     // If the input file name is provided with an extension
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 		{
             filename = filename.substr(0, found);
 			string InFile = filename + ".dat";
-
+			string OutFile = filename + ".out";
 			//  Read data and define the problem domain
 			if (!FEMData->ReadData(InFile, OutFile))
 			{
@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 		{
 			filename = filename.substr(0, found);
 			string InFile = filename + ".inp";
+			string OutFile = filename + ".out";
 			OutFile = filename + ".out";
 			if (!FEMData->ReadInpData(InFile, OutFile))
 			{
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
     }
+	string OutFile = filename + ".out";
 
     string InFile = filename + ".dat";
 
